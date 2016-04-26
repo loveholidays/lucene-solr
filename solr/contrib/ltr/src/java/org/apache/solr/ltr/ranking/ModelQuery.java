@@ -100,7 +100,7 @@ public class ModelQuery extends Query {
     result = prime * result + ((meta == null) ? 0 : meta.hashCode());
     result = prime * result
         + ((originalQuery == null) ? 0 : originalQuery.hashCode());
-    result = prime * result + ((efi == null) ? 0 : originalQuery.hashCode());
+    result = prime * result + ((efi == null) ? 0 : efi.hashCode());
     result = prime * result + this.toString().hashCode();
     return result;
   }
