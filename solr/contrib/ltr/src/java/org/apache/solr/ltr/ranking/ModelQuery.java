@@ -36,7 +36,6 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.Weight;
-import org.apache.lucene.search.Scorer.ChildScorer;
 import org.apache.solr.ltr.feature.ModelMetadata;
 import org.apache.solr.ltr.feature.norm.Normalizer;
 import org.apache.solr.ltr.feature.norm.impl.IdentityNormalizer;
@@ -218,18 +217,16 @@ public class ModelQuery extends Query {
       int index = 0;
       for (FeatureWeight feature : allFeatureWeights) {
         Explanation featureExplanation = feature.explain(context, doc);
-        if(featureExplanation!=null)
-            explanations[index++] = featureExplanation;
+        explanations[index++] = featureExplanation;
       }
 
       List<Explanation> featureExplanations = new ArrayList<>();
       for (FeatureWeight f : modelFeatures) {
         Normalizer n = f.getNorm();
         Explanation e = explanations[f.id];
-        if(e!=null) {
           if (n != IdentityNormalizer.INSTANCE) e = n.explain(e);
           featureExplanations.add(e);
-        }
+
       }
       // TODO this calls twice the scorers, could be optimized.
       ModelScorer bs = scorer(context);

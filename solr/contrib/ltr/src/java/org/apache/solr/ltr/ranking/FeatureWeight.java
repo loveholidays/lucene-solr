@@ -124,8 +124,9 @@ public abstract class FeatureWeight extends Weight {
       r.iterator().advance(doc);
       if (r.docID() == doc) score = r.score();
       return Explanation.match(score, r.toString());
+    }else{
+      return Explanation.match(score, "The feature has no value");
     }
-    return null;
 
   }
 
