@@ -17,24 +17,16 @@ package org.apache.solr.ltr.ranking;
  * limitations under the License.
  */
 
-import java.lang.invoke.MethodHandles;
-
 import org.apache.lucene.util.LuceneTestCase.SuppressCodecs;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.ltr.TestRerankBase;
-import org.apache.solr.ltr.util.CommonLTRParams;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @SuppressCodecs({"Lucene3x", "Lucene41", "Lucene40", "Appending"})
 public class TestLTRQParserPlugin extends TestRerankBase {
 
-  @SuppressWarnings("unused")
-  private static final Logger logger = LoggerFactory.getLogger(MethodHandles
-      .lookup().lookupClass());
 
   @BeforeClass
   public static void before() throws Exception {

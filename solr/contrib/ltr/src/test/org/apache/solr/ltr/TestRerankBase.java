@@ -59,9 +59,8 @@ import org.slf4j.LoggerFactory;
 @SuppressSSL
 public class TestRerankBase extends RestTestBase {
 
-  private static final Logger logger = LoggerFactory.getLogger(MethodHandles
-      .lookup().lookupClass());
-
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  
   protected static File tmpSolrHome;
   protected static File tmpConfDir;
 
@@ -117,12 +116,12 @@ public class TestRerankBase extends RestTestBase {
     final File mstore = new File(tmpConfDir, MODEL_FILE_NAME);
 
     if (fstore.exists()) {
-      logger.info("remove feature store config file in {}",
+      log.info("remove feature store config file in {}",
           fstore.getAbsolutePath());
       Files.delete(fstore.toPath());
     }
     if (mstore.exists()) {
-      logger.info("remove model store config file in {}",
+      log.info("remove model store config file in {}",
           mstore.getAbsolutePath());
       Files.delete(mstore.toPath());
     }
@@ -168,12 +167,12 @@ public class TestRerankBase extends RestTestBase {
     mstorefile = new File(tmpConfDir, MODEL_FILE_NAME);
 
     if (fstorefile.exists()) {
-      logger.info("remove feature store config file in {}",
+      log.info("remove feature store config file in {}",
           fstorefile.getAbsolutePath());
       Files.delete(fstorefile.toPath());
     }
     if (mstorefile.exists()) {
-      logger.info("remove model store config file in {}",
+      log.info("remove model store config file in {}",
           mstorefile.getAbsolutePath());
       Files.delete(mstorefile.toPath());
     }
@@ -260,7 +259,7 @@ public class TestRerankBase extends RestTestBase {
   protected static void loadFeature(String name, String type, String params)
       throws Exception {
     final String feature = getFeatureInJson(name, type, "test", params);
-    logger.info("loading feauture \n{} ", feature);
+    log.info("loading feauture \n{} ", feature);
     assertJPut(CommonLTRParams.FEATURE_STORE_END_POINT, feature,
         "/responseHeader/status==0");
   }
@@ -268,7 +267,7 @@ public class TestRerankBase extends RestTestBase {
   protected static void loadFeature(String name, String type, String fstore,
       String params) throws Exception {
     final String feature = getFeatureInJson(name, type, fstore, params);
-    logger.info("loading feauture \n{} ", feature);
+    log.info("loading feauture \n{} ", feature);
     assertJPut(CommonLTRParams.FEATURE_STORE_END_POINT, feature,
         "/responseHeader/status==0");
   }
@@ -281,7 +280,7 @@ public class TestRerankBase extends RestTestBase {
   protected static void loadModel(String name, String type, String[] features,
       String fstore, String params) throws Exception {
     final String model = getModelInJson(name, type, features, fstore, params);
-    logger.info("loading model \n{} ", model);
+    log.info("loading model \n{} ", model);
     assertJPut(CommonLTRParams.MODEL_STORE_END_POINT, model,
         "/responseHeader/status==0");
   }
@@ -334,7 +333,7 @@ public class TestRerankBase extends RestTestBase {
         + fileName);
     final String multipleFeatures = FileUtils.readFileToString(
         new File(url.toURI()), "UTF-8");
-    logger.info("send \n{}", multipleFeatures);
+    log.info("send \n{}", multipleFeatures);
 
     assertJPut(CommonLTRParams.FEATURE_STORE_END_POINT, multipleFeatures,
         "/responseHeader/status==0");
@@ -402,8 +401,7 @@ public class TestRerankBase extends RestTestBase {
       h.updater.handleRequest(req, res);
     } catch (final Throwable ex) {
       // Ignore. Just log the exception and go to the next file
-      logger.error(ex.getMessage());
-      ex.printStackTrace();
+      log.error(ex.getMessage(), ex);
     }
     assertU(commit());
 

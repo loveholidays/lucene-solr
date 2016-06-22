@@ -48,9 +48,8 @@ import com.carrotsearch.hppc.IntIntHashMap;
 public class LTRCollector extends TopDocsCollector {
   // FIXME: This should extend ReRankCollector since it is mostly a copy
 
-  private static final Logger logger = LoggerFactory.getLogger(MethodHandles
-      .lookup().lookupClass());
-
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  
   private final ModelQuery reRankModel;
   private TopDocsCollector mainCollector;
   private final IndexSearcher searcher;
@@ -111,10 +110,8 @@ public class LTRCollector extends TopDocsCollector {
         topRerankDocs = new LTRRescorer(reRankModel).rescore(searcher,
             mainDocs, howMany);
       } catch (final IOException e) {
-        logger.error("LTRRescorer reranking failed. " + e);
-        e.printStackTrace();
-        // If someone deployed a messed up model, we don't want to crash and
-        // burn.
+        log.error("LTRRescorer reranking failed. ", e);
+        // If someone deployed a messed up model, we don't want to crash and burn.
         // Return the original list at least
         topRerankDocs = mainDocs;
       }
@@ -140,7 +137,6 @@ public class LTRCollector extends TopDocsCollector {
       return topRerankDocs;
 
     } catch (final Exception e) {
-      logger.error("Exception: ", e);
       throw new SolrException(SolrException.ErrorCode.BAD_REQUEST, e);
     }
   }

@@ -18,7 +18,7 @@ the techproducts example please follow these steps.
 
     `cd solr`
     `ant dist`
-    `ant example`
+    `ant server`
 
 2. Run the example to setup the index
 
@@ -33,7 +33,7 @@ the techproducts example please follow these steps.
         `mkdir example/techproducts/solr/techproducts/lib`
      3. Install the plugin in the lib folder
 
-        `cp build/contrib/ltr/lucene-ltr-6.0.0-SNAPSHOT.jar example/techproducts/solr/techproducts/lib/`
+        `cp build/contrib/ltr/lucene-ltr-7.0.0-SNAPSHOT.jar example/techproducts/solr/techproducts/lib/`
      4. Replace the original solrconfig with one importing all the ltr components
 
         `cp contrib/ltr/example/solrconfig.xml example/techproducts/solr/techproducts/conf/`

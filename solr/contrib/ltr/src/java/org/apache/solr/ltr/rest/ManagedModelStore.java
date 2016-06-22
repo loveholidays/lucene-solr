@@ -19,9 +19,7 @@ package org.apache.solr.ltr.rest;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -57,9 +55,8 @@ public class ManagedModelStore extends ManagedResource implements
   ModelStore store;
   private ManagedFeatureStore featureStores;
 
-  private static final Logger logger = LoggerFactory.getLogger(MethodHandles
-      .lookup().lookupClass());
-
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  
   public ManagedModelStore(String resourceId, SolrResourceLoader loader,
       StorageIO storageIO) throws SolrException {
     super(resourceId, loader, storageIO);
@@ -69,7 +66,7 @@ public class ManagedModelStore extends ManagedResource implements
   }
 
   public void init(ManagedFeatureStore featureStores) {
-    logger.info("INIT model store");
+    log.info("INIT model store");
     this.featureStores = featureStores;
   }
 
@@ -90,7 +87,7 @@ public class ManagedModelStore extends ManagedResource implements
   }
 
   public void loadStoredModels() {
-    logger.info("------ managed models ~ loading ------");
+    log.info("------ managed models ~ loading ------");
 
     if ((managedData != null) && (managedData instanceof List)) {
       final List<Map<String,Object>> up = (List<Map<String,Object>>) managedData;
@@ -113,7 +110,7 @@ public class ManagedModelStore extends ManagedResource implements
 
     Normalizer norm = IdentityNormalizer.INSTANCE;
     if (featureMap.containsKey(CommonLTRParams.FEATURE_NORM)) {
-      logger.info("adding normalizer {}", featureMap);
+      log.info("adding normalizer {}", featureMap);
       final Map<String,Object> normMap = (Map<String,Object>) featureMap
           .get(CommonLTRParams.FEATURE_NORM);
       // FIXME type shouldn't be be null, exception?
@@ -277,7 +274,7 @@ public class ManagedModelStore extends ManagedResource implements
 
   public synchronized void addMetadataModel(LTRScoringAlgorithm modeldata)
       throws ModelException {
-    logger.info("adding model {}", modeldata.getName());
+    log.info("adding model {}", modeldata.getName());
     store.addModel(modeldata);
   }
 

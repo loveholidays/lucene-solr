@@ -17,23 +17,15 @@ package org.apache.solr.ltr.ranking;
  * limitations under the License.
  */
 
-import java.lang.invoke.MethodHandles;
-
 import org.apache.solr.SolrTestCaseJ4.SuppressSSL;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.ltr.TestRerankBase;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @SuppressSSL
 public class TestLTRQParserExplain extends TestRerankBase {
-
-  @SuppressWarnings("unused")
-  private static final Logger logger = LoggerFactory.getLogger(MethodHandles
-      .lookup().lookupClass());
 
   @BeforeClass
   public static void setup() throws Exception {

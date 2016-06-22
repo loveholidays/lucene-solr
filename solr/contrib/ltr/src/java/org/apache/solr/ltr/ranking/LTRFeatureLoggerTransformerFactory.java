@@ -18,7 +18,6 @@ package org.apache.solr.ltr.ranking;
  */
 
 import java.io.IOException;
-import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.Map;
 
@@ -43,8 +42,6 @@ import org.apache.solr.response.ResultContext;
 import org.apache.solr.response.transform.DocTransformer;
 import org.apache.solr.response.transform.TransformerFactory;
 import org.apache.solr.search.SolrIndexSearcher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This transformer will take care to generate and append in the response the
@@ -53,9 +50,6 @@ import org.slf4j.LoggerFactory;
  * machine learning framework).
  */
 public class LTRFeatureLoggerTransformerFactory extends TransformerFactory {
-
-  private static final Logger logger = LoggerFactory.getLogger(MethodHandles
-      .lookup().lookupClass());
 
   @Override
   public void init(@SuppressWarnings("rawtypes") NamedList args) {
@@ -147,9 +141,8 @@ public class LTRFeatureLoggerTransformerFactory extends TransformerFactory {
           reRankModel.setOriginalQuery(context.getQuery());
 
         }catch (final Exception e) {
-          logger.error("retrieving the feature store {}\n{}", featureStoreName, e);
           throw new SolrException(ErrorCode.BAD_REQUEST,
-              "retrieving the feature store "+featureStoreName);
+              "retrieving the feature store "+featureStoreName, e);
         }
       }
 

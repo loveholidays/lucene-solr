@@ -49,9 +49,8 @@ public class ManagedFeatureStore extends ManagedResource implements
 
   private final Map<String,FeatureStore> stores = new HashMap<>();
 
-  private static final Logger logger = LoggerFactory.getLogger(MethodHandles
-      .lookup().lookupClass());
-
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  
   public ManagedFeatureStore(String resourceId, SolrResourceLoader loader,
       StorageIO storageIO) throws SolrException {
     super(resourceId, loader, storageIO);
@@ -73,7 +72,7 @@ public class ManagedFeatureStore extends ManagedResource implements
       Object managedData) throws SolrException {
 
     stores.clear();
-    logger.info("------ managed feature ~ loading ------");
+    log.info("------ managed feature ~ loading ------");
     if (managedData instanceof List) {
       @SuppressWarnings("unchecked")
       final List<Map<String,Object>> up = (List<Map<String,Object>>) managedData;
@@ -103,8 +102,6 @@ public class ManagedFeatureStore extends ManagedResource implements
     } catch (final InvalidFeatureNameException e) {
       throw new SolrException(ErrorCode.BAD_REQUEST, e);
     } catch (final FeatureException e) {
-      logger.error(e.getMessage());
-      e.printStackTrace();
       throw new SolrException(ErrorCode.BAD_REQUEST, e);
     }
   }
@@ -116,7 +113,7 @@ public class ManagedFeatureStore extends ManagedResource implements
       featureStore = CommonLTRParams.DEFAULT_FEATURE_STORE_NAME;
     }
 
-    logger.info("register feature {} -> {} in store [" + featureStore + "]",
+    log.info("register feature {} -> {} in store [" + featureStore + "]",
         name, type);
     if (!NameValidator.check(name)) {
       throw new InvalidFeatureNameException(name);
@@ -125,11 +122,8 @@ public class ManagedFeatureStore extends ManagedResource implements
     final FeatureStore fstore = getFeatureStore(featureStore);
 
     if (fstore.containsFeature(name)) {
-      logger.error(
-          "feature {} yet contained in the store, please use a different name",
-          name);
       throw new InvalidFeatureNameException(name
-          + " yet contained in the store");
+          + " already contained in the store, please use a different name");
     }
 
     if (params == null) {

@@ -20,7 +20,6 @@ package org.apache.solr.ltr.ranking;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.apache.lucene.document.Document;
@@ -54,9 +53,8 @@ import org.slf4j.LoggerFactory;
 @SuppressCodecs("Lucene3x")
 public class TestReRankingPipeline extends LuceneTestCase {
 
-  private static final Logger logger = LoggerFactory.getLogger(MethodHandles
-      .lookup().lookupClass());
-
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  
   private IndexSearcher getSearcher(IndexReader r) {
     final IndexSearcher searcher = newSearcher(r);
 
@@ -228,7 +226,7 @@ public class TestReRankingPipeline extends LuceneTestCase {
     // test rerank with different topN cuts
 
     for (int topN = 1; topN <= 5; topN++) {
-      logger.info("rerank {} documents ", topN);
+      log.info("rerank {} documents ", topN);
       hits = searcher.search(bqBuilder.build(), 10);
       // meta = new MockModel();
       // rescorer = new LTRRescorer(new ModelQuery(meta));
@@ -237,7 +235,7 @@ public class TestReRankingPipeline extends LuceneTestCase {
       hits = new TopDocs(hits.totalHits, slice, hits.getMaxScore());
       hits = rescorer.rescore(searcher, hits, topN);
       for (int i = topN - 1, j = 0; i >= 0; i--, j++) {
-        logger.info("doc {} in pos {}", searcher.doc(hits.scoreDocs[j].doc)
+        log.info("doc {} in pos {}", searcher.doc(hits.scoreDocs[j].doc)
             .get("id"), j);
 
         assertEquals(i,

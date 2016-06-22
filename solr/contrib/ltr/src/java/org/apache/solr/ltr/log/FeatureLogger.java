@@ -35,9 +35,8 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class FeatureLogger<FV_TYPE> {
 
-  private static final Logger logger = LoggerFactory.getLogger(MethodHandles
-      .lookup().lookupClass());
-
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  
   /**
    * Log will be called every time that the model generates the feature values
    * for a document and a query.
@@ -88,7 +87,7 @@ public abstract class FeatureLogger<FV_TYPE> {
     if (format.equals("json")) {
       return new MapFeatureLogger();
     }
-    logger.warn("unknown feature logger {}", format);
+    log.warn("unknown feature logger {}", format);
     return null;
 
   }
