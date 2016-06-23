@@ -82,7 +82,7 @@ public class LambdaMARTModel extends LTRScoringAlgorithm {
       }
 
       if ((featureIndex < 0) || // unsupported feature
-          (featureIndex > featureVector.length) /*
+          (featureIndex >= featureVector.length) /*
                                                  * tree is looking for a feature
                                                  * that does not exist
                                                  */

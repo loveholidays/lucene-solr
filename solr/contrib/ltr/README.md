@@ -159,7 +159,12 @@ using standard Solr queries. As an example:
   "name" : "userTextTitleMatch",
   "type" : "org.apache.solr.ltr.feature.impl.SolrFeature",
   "params" : { "q" : "{!field f=title}${user_text}" }
-}
+},
+ {
+   "name" : "userFromMobile",
+   "type" : "org.apache.solr.ltr.feature.impl.ValueFeature",
+   "params" : { "value" : ${userFromMobile}, "required":true }
+ }
 ]
 ```
 
@@ -194,6 +199,11 @@ called 'user_text' passed in through the request, and will fire if there is
 a term match for the document field 'title' from the value of the external
 field 'user_text'.  You can provide default values for external features as
 well by specifying ${myField:myDefault}, similar to how you would in a Solr config.
+In this case, the fifth feature (userFromMobile) will be looking for an external parameter
+called 'userFromMobile' passed in through the request, if the ValueFeature is :
+required=true, it will throw an exception if the external feature is not passed
+required=false, it will silently ignore the feature and avoid the scoring ( at Document scoring time, the model will consider 0 as feature value)
+The advantage in defining a feature as not required, where possible, is to avoid wasting caching space and time in calculating the featureScore.
 See the [Run a Rerank Query](#run-a-rerank-query) section for how to pass in external information.
 
 ### Custom Features

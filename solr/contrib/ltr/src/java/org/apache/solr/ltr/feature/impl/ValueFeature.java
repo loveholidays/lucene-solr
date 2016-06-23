@@ -33,11 +33,13 @@ import org.apache.solr.ltr.util.NamedParams;
 import org.apache.solr.request.SolrQueryRequest;
 
 public class ValueFeature extends Feature {
+  /** name of the attribute containing the value of this feature **/
+  private static final String VALUE_FIELD = "value";
+  private static final String REQUIRED_PARAM = "required";
 
   protected float configValue = -1f;
   protected String configValueStr = null;
-  /** name of the attribute containing the value of this feature **/
-  private static final String VALUE_FIELD = "value";
+  protected boolean required = false;
 
   public ValueFeature() {}
 
@@ -45,6 +47,9 @@ public class ValueFeature extends Feature {
   public void init(String name, NamedParams params, int id)
       throws FeatureException {
     super.init(name, params, id);
+    final Object paramRequired = params.get(REQUIRED_PARAM);
+    if (paramRequired != null)
+      this.required = (boolean) paramRequired;
     final Object paramValue = params.get(VALUE_FIELD);
     if (paramValue == null) {
       throw new FeatureException("Missing the field 'value' in params for "
@@ -74,18 +79,22 @@ public class ValueFeature extends Feature {
 
   public class ValueFeatureWeight extends FeatureWeight {
 
-    final protected float featureValue;
+    final protected Float featureValue;
 
     public ValueFeatureWeight(IndexSearcher searcher, String name,
         NamedParams params, Normalizer norm, int id, SolrQueryRequest request, Query originalQuery, Map<String,String> efi) {
       super(ValueFeature.this, searcher, name, params, norm, id, request, originalQuery, efi);
       if (configValueStr != null) {
         final String expandedValue = macroExpander.expand(configValueStr);
-        if (expandedValue == null) {
-          throw new FeatureException(this.getClass().getCanonicalName()+" requires efi parameter that was not passed in request.");
+        if (expandedValue != null) {
+          featureValue = Float.parseFloat(expandedValue);
+        } else if (required) {
+          throw new FeatureException(this.getClass().getCanonicalName() + " requires efi parameter that was not passed in request.");
+        } else {
+          featureValue=null;
         }
 
-        featureValue = Float.parseFloat(expandedValue);
+
       } else {
         featureValue = configValue;
       }
@@ -93,7 +102,10 @@ public class ValueFeature extends Feature {
 
     @Override
     public FeatureScorer scorer(LeafReaderContext context) throws IOException {
-      return new ValueFeatureScorer(this, featureValue, "ValueFeature");
+      if(featureValue!=null)
+        return new ValueFeatureScorer(this, featureValue, "ValueFeature");
+      else
+        return null;
     }
 
     /**

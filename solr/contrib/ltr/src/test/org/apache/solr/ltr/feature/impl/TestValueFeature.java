@@ -106,9 +106,9 @@ public class TestValueFeature extends TestRerankBase {
   }
 
   @Test
-  public void testValueFeature6() throws Exception {
+  public void testValueFeature6_implicitlyNotRequired_shouldReturnOkStatusCode() throws Exception {
     loadFeature("c5", ValueFeature.class.getCanonicalName(), "c5",
-        "{\"value\":\"${val5}\"}");
+        "{\"value\":\"${val6}\"}");
     loadModel("m5", RankSVMModel.class.getCanonicalName(), new String[] {"c5"},
         "c5", "{\"weights\":{\"c5\":1.0}}");
 
@@ -119,10 +119,40 @@ public class TestValueFeature extends TestRerankBase {
     query.add("wt", "json");
     query.add("rq", "{!ltr model=m5 reRankDocs=4}");
 
-    // String res = restTestHarness.query("/query" + query.toQueryString());
-    // System.out.println(res);
+    assertJQ("/query" + query.toQueryString(), "/responseHeader/status==0");
+  }
 
-    // No efi.val passed in
+  @Test
+  public void testValueFeature6_explictlyNotRequired_shouldReturnOkStatusCode() throws Exception {
+    loadFeature("c7", ValueFeature.class.getCanonicalName(), "c7",
+        "{\"value\":\"${val7}\",\"required\":false}");
+    loadModel("m7", RankSVMModel.class.getCanonicalName(), new String[] {"c7"},
+        "c7", "{\"weights\":{\"c7\":1.0}}");
+
+    final SolrQuery query = new SolrQuery();
+    query.setQuery("title:w1");
+    query.add("fl", "*, score,fvonly:[fvonly]");
+    query.add("rows", "4");
+    query.add("wt", "json");
+    query.add("rq", "{!ltr model=m7 reRankDocs=4}");
+
+    assertJQ("/query" + query.toQueryString(), "/responseHeader/status==0");
+  }
+
+  @Test
+  public void testValueFeature6_required_shouldReturn400StatusCode() throws Exception {
+    loadFeature("c8", ValueFeature.class.getCanonicalName(), "c8",
+        "{\"value\":\"${val8}\",\"required\":true}");
+    loadModel("m8", RankSVMModel.class.getCanonicalName(), new String[] {"c8"},
+        "c8", "{\"weights\":{\"c8\":1.0}}");
+
+    final SolrQuery query = new SolrQuery();
+    query.setQuery("title:w1");
+    query.add("fl", "*, score,fvonly:[fvonly]");
+    query.add("rows", "4");
+    query.add("wt", "json");
+    query.add("rq", "{!ltr model=m8 reRankDocs=4}");
+
     assertJQ("/query" + query.toQueryString(), "/responseHeader/status==400");
   }
 
