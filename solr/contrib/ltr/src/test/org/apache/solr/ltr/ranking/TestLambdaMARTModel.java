@@ -57,9 +57,6 @@ public class TestLambdaMARTModel extends TestRerankBase {
 
     loadFeatures("lambdamart_features.json"); // currently needed to force
     // loading models
-    loadModels("lambdamart_model_originalScore_additive.json");
-    loadModels("lambdamart_model_originalScore_multiplicative.json");
-    loadModels("lambdamart_model_originalScore_noBoost.json");
     loadModels("lambdamart_model.json");
   }
 
@@ -69,7 +66,7 @@ public class TestLambdaMARTModel extends TestRerankBase {
   }
 
   @Test
-  public void scoreCalculus_noOriginalScoreFeature_shouldOverwriteScoreWithLambdaMARTOutput() throws Exception {
+  public void scoreCalculus_sampleLambdaMARTModel_shouldOverwriteScore() throws Exception {
     final SolrQuery query = new SolrQuery();
     query.setQuery("field(popularity)");
     query.add("rows", "3");
@@ -96,124 +93,6 @@ public class TestLambdaMARTModel extends TestRerankBase {
     assertJQ("/query" + query.toQueryString(), "/response/docs/[2]/id=='2'");
     assertJQ("/query" + query.toQueryString(),
         "/response/docs/[2]/score==-120.0");
-  }
-
-  @Test
-  public void scoreCalculus_noBoostOriginalScoreFeature_shoulDefaultMultiplyToLambdaMARTScore() throws Exception {
-    final SolrQuery query = new SolrQuery();
-    query.setQuery("field(popularity)");
-    query.add("rows", "3");
-    query.setParam("defType", "func");
-    query.add("fl", "*,score");
-
-    // Regular scores
-    assertJQ("/query" + query.toQueryString(), "/response/docs/[0]/id=='1'");
-    assertJQ("/query" + query.toQueryString(), "/response/docs/[0]/score==100.0");
-    assertJQ("/query" + query.toQueryString(), "/response/docs/[1]/id=='2'");
-    assertJQ("/query" + query.toQueryString(), "/response/docs/[1]/score==50.0");
-    assertJQ("/query" + query.toQueryString(), "/response/docs/[2]/id=='3'");
-    assertJQ("/query" + query.toQueryString(), "/response/docs/[2]/score==20.0");
-
-    // Matched user query since it was passed in
-    query.remove("rq");
-    query.add("rq",
-        "{!ltr reRankDocs=3 model=lambdaMARTModelOriginalScoreNoBoost efi.user_query=w3}");
-
-    assertJQ("/query" + query.toQueryString(), "/response/docs/[0]/id=='3'");
-    assertJQ("/query" + query.toQueryString(), "/response/docs/[0]/score==30.0");
-
-    assertJQ("/query" + query.toQueryString(), "/response/docs/[1]/id=='1'");
-    assertJQ("/query" + query.toQueryString(),
-        "/response/docs/[1]/score==-24.0");
-
-    assertJQ("/query" + query.toQueryString(), "/response/docs/[2]/id=='2'");
-    assertJQ("/query" + query.toQueryString(),
-        "/response/docs/[2]/score==-48.0");
-  }
-
-  @Test
-  public void scoreCalculus_additiveOriginalScoreBoost_shouldAddToLambdaMARTScore() throws Exception {
-    final SolrQuery query = new SolrQuery();
-    query.setQuery("field(popularity)");
-    query.add("rows", "3");
-    query.setParam("defType", "func");
-    query.add("fl", "*,score");
-
-    // Regular scores
-    assertJQ("/query" + query.toQueryString(), "/response/docs/[0]/id=='1'");
-    assertJQ("/query" + query.toQueryString(), "/response/docs/[0]/score==100.0");
-    assertJQ("/query" + query.toQueryString(), "/response/docs/[1]/id=='2'");
-    assertJQ("/query" + query.toQueryString(), "/response/docs/[1]/score==50.0");
-    assertJQ("/query" + query.toQueryString(), "/response/docs/[2]/id=='3'");
-    assertJQ("/query" + query.toQueryString(), "/response/docs/[2]/score==20.0");
-
-    // Matched user query since it was passed in
-    query.remove("rq");
-    query.add("rq",
-        "{!ltr reRankDocs=3 model=lambdaMARTModelOriginalScoreAdditive efi.user_query=w3}");
-
-    assertJQ("/query" + query.toQueryString(), "/response/docs/[0]/id=='3'");
-    assertJQ("/query" + query.toQueryString(), "/response/docs/[0]/score==32.0");
-
-    assertJQ("/query" + query.toQueryString(), "/response/docs/[1]/id=='1'");
-    assertJQ("/query" + query.toQueryString(),
-        "/response/docs/[1]/score==-110.0");
-
-    assertJQ("/query" + query.toQueryString(), "/response/docs/[2]/id=='2'");
-    assertJQ("/query" + query.toQueryString(),
-        "/response/docs/[2]/score==-115.0");
-  }
-
-  @Test
-  public void scoreCalculus_multiplicativeOriginalScoreBoost_shouldMultiplyToLambdaMARTScore() throws Exception {
-    final SolrQuery query = new SolrQuery();
-    query.setQuery("field(popularity)");
-    query.add("rows", "3");
-    query.setParam("defType", "func");
-    query.add("fl", "*,score");
-
-    // Regular scores
-    assertJQ("/query" + query.toQueryString(), "/response/docs/[0]/id=='1'");
-    assertJQ("/query" + query.toQueryString(), "/response/docs/[0]/score==100.0");
-    assertJQ("/query" + query.toQueryString(), "/response/docs/[1]/id=='2'");
-    assertJQ("/query" + query.toQueryString(), "/response/docs/[1]/score==50.0");
-    assertJQ("/query" + query.toQueryString(), "/response/docs/[2]/id=='3'");
-    assertJQ("/query" + query.toQueryString(), "/response/docs/[2]/score==20.0");
-
-    // Matched user query since it was passed in
-    query.remove("rq");
-    query.add("rq",
-        "{!ltr reRankDocs=3 model=lambdaMARTModelOriginalScoreMultiplicative efi.user_query=w3}");
-
-    assertJQ("/query" + query.toQueryString(), "/response/docs/[0]/id=='3'");
-    assertJQ("/query" + query.toQueryString(), "/response/docs/[0]/score==300.0");
-
-    assertJQ("/query" + query.toQueryString(), "/response/docs/[1]/id=='1'");
-    assertJQ("/query" + query.toQueryString(),
-        "/response/docs/[1]/score==-2.4");
-
-    assertJQ("/query" + query.toQueryString(), "/response/docs/[2]/id=='2'");
-    assertJQ("/query" + query.toQueryString(),
-        "/response/docs/[2]/score==-4.8");
-  }
-
-  @Test(expected = ModelException.class)
-  public void parsingLambdaMARTModel_noOriginalScoreFeatureInTheModel_shouldThrowException() throws Exception {
-    createModelFromFiles("lambdamart_model_originalScore_noOriginalScoreFeatureDefined.json",
-        "lambdamart_features.json");
-  }
-
-  @Test(expected = ModelException.class)
-  public void parsingLambdaMARTModel_noWeightForOriginalScore_shouldThrowException() throws Exception {
-    createModelFromFiles("lambdamart_model_originalScore_noWeight.json",
-        "lambdamart_features.json");
-  }
-
-  @Test(expected = ModelException.class)
-  public void lambdaMartTestNoParams() throws Exception {
-    createModelFromFiles("lambdamart_model_no_params.json",
-        "lambdamart_features.json");
-
   }
 
   @Test(expected = ModelException.class)

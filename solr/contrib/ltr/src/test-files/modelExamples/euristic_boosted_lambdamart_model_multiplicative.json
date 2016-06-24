@@ -1,6 +1,6 @@
 {
-  "type": "org.apache.solr.ltr.ranking.LambdaMARTModel",
-  "name": "lambdaMARTModelOriginalScoreNoWeight",
+  "type": "org.apache.solr.ltr.ranking.EuristicBoostedLambdaMARTModel",
+  "name": "lambdaMARTModelOriginalScoreMultiplicative",
   "features": [
     {
       "name": "matchedTitle"
@@ -13,7 +13,10 @@
     }
   ],
   "params": {
-    "originalScoreBoost": {
+    "boost": {
+      "feature": "originalScoreFeature",
+      "weight": 0.5,
+      "type": "multiplicative"
     },
     "trees": [
       {
