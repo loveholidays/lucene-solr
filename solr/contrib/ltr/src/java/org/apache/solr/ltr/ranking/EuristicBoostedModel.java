@@ -1,5 +1,6 @@
 package org.apache.solr.ltr.ranking;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -35,6 +36,11 @@ public abstract class EuristicBoostedModel extends LTRScoringAlgorithm {
 
   protected EuristicFeatureBoost euristicFeatureBoost;
   protected LTRScoringAlgorithm LTRModel;
+
+  protected float internalModelScore;
+  protected float boostFeatureValue;
+  protected float weightedBoostFeatureValue;
+
 
   class EuristicFeatureBoost {
     public static final String FEATURE_NAME = "feature";
@@ -102,27 +108,43 @@ public abstract class EuristicBoostedModel extends LTRScoringAlgorithm {
 
   @Override
   public float score(float[] modelFeatureValuesNormalized) {
-    float score = LTRModel.score(modelFeatureValuesNormalized);
+    internalModelScore = LTRModel.score(modelFeatureValuesNormalized);
+    float finalScore = internalModelScore;
     if (euristicFeatureBoost != null) {
-
-      float originalScore = modelFeatureValuesNormalized[euristicFeatureBoost.featureIndex];
-      float weightedOriginalScore = euristicFeatureBoost.weight * originalScore;
+      boostFeatureValue = modelFeatureValuesNormalized[euristicFeatureBoost.featureIndex];
+      weightedBoostFeatureValue = euristicFeatureBoost.weight * boostFeatureValue;
 
       if (MULTIPLICATIVE_BOOST.equals(euristicFeatureBoost.type)) {
-        if (score < 0) {
-          weightedOriginalScore = 1 / weightedOriginalScore;
+        if (internalModelScore < 0) {
+          weightedBoostFeatureValue = 1 / weightedBoostFeatureValue;
         }
-        score *= weightedOriginalScore;
+        finalScore *= weightedBoostFeatureValue;
       } else if (ADDITIVE_BOOST.equals(euristicFeatureBoost.type)) {
-        score += weightedOriginalScore;
+        finalScore += weightedBoostFeatureValue;
       }
 
     }
-    return score;
+    return finalScore;
   }
 
   @Override
   public Explanation explain(LeafReaderContext context, int doc, float finalScore, List<Explanation> featureExplanations) {
-    return LTRModel.explain(context, doc, finalScore, featureExplanations);
+    if (euristicFeatureBoost == null) {
+      return LTRModel.explain(context, doc, internalModelScore, featureExplanations);
+    }
+
+    String boostTypeOperator = "prod";
+    if (euristicFeatureBoost.type.equals(ADDITIVE_BOOST))
+      boostTypeOperator = "sum";
+
+    final List<Explanation> details = new ArrayList<>();
+    final Explanation boostExplain = Explanation.match(weightedBoostFeatureValue,
+        euristicFeatureBoost.weight + " weight on feature [" + euristicFeatureBoost.feature + "] : " + boostFeatureValue);
+    details.add(boostExplain);
+    final Explanation internalModelExplain = LTRModel.explain(context, doc, internalModelScore, featureExplanations);
+    details.add(internalModelExplain);
+
+    return Explanation.match(finalScore, toString()
+        + " model applied to features, " + boostTypeOperator + " of:", details);
   }
 }

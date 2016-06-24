@@ -98,6 +98,31 @@ public class TestEuristicBoostedLambdaMARTModel extends TestRerankBase {
   }
 
   @Test
+  public void scoreExplain_noEuristicBoost_shouldOverwriteScoreWithLambdaMARTOutput() throws Exception {
+    final SolrQuery query = new SolrQuery();
+    query.setQuery("field(popularity)");
+    query.add("rows", "3");
+    query.setParam("defType", "func");
+    query.add("fl", "*,score");
+    query.setParam("debugQuery", "on");
+    query.add("rq",
+        "{!ltr reRankDocs=3 model=lambdamartmodel efi.user_query=w3}");
+
+    assertJQ(
+        "/query" + query.toQueryString(),
+        "/debug/explain/3=='\n" +
+            "30.0 = LambdaMARTModel(name=lambdamartmodel) model applied to features, sum of:\n" +
+            "  50.0 = tree 0 | \\'matchedTitle\\':1.0 > 0.500001, Go Right | \\'this_feature_doesnt_exist\\' does not exist in FV, Go Left | val: 50.0\n" +
+            "  -20.0 = tree 1 | val: -10.0\n'}");
+    assertJQ(
+        "/query" + query.toQueryString(),
+        "/debug/explain/1=='\n" +
+            "-120.0 = LambdaMARTModel(name=lambdamartmodel) model applied to features, sum of:\n" +
+            "  -100.0 = tree 0 | \\'matchedTitle\\':0.0 <= 0.500001, Go Left | val: -100.0\n" +
+            "  -20.0 = tree 1 | val: -10.0\\n'}");
+  }
+
+  @Test
   public void scoreCalculus_noBoostTypeEuristicBoost_shoulDefaultMultiplyToLambdaMARTScore() throws Exception {
     final SolrQuery query = new SolrQuery();
     query.setQuery("field(popularity)");
@@ -164,6 +189,35 @@ public class TestEuristicBoostedLambdaMARTModel extends TestRerankBase {
   }
 
   @Test
+  public void scoreExplain_additiveEuristicBoost_shouldAddToLambdaMARTScore() throws Exception {
+    final SolrQuery query = new SolrQuery();
+    query.setQuery("field(popularity)");
+    query.add("rows", "3");
+    query.setParam("defType", "func");
+    query.setParam("debugQuery", "on");
+    query.add("fl", "*,score");
+    query.add("rq",
+        "{!ltr reRankDocs=3 model=lambdaMARTModelOriginalScoreAdditive efi.user_query=w3}");
+
+    assertJQ(
+        "/query" + query.toQueryString(),
+        "/debug/explain/3=='\n" +
+            "32.0 = EuristicBoostedLambdaMARTModel(name=lambdaMARTModelOriginalScoreAdditive) model applied to features, sum of:\n" +
+            "  2.0 = 0.1 weight on feature [originalScoreFeature] : 20.0\n" +
+            "  30.0 = LambdaMARTModel(name=lambdaMARTModelOriginalScoreAdditive) model applied to features, sum of:\n" +
+            "    50.0 = tree 0 | \\'matchedTitle\\':1.0 > 0.500001, Go Right | \\'this_feature_doesnt_exist\\' does not exist in FV, Go Left | val: 50.0\n" +
+            "    -20.0 = tree 1 | val: -10.0\n'}");
+    assertJQ(
+        "/query" + query.toQueryString(),
+        "/debug/explain/1=='\n" +
+            "-110.0 = EuristicBoostedLambdaMARTModel(name=lambdaMARTModelOriginalScoreAdditive) model applied to features, sum of:\n" +
+            "  10.0 = 0.1 weight on feature [originalScoreFeature] : 100.0\n" +
+            "  -120.0 = LambdaMARTModel(name=lambdaMARTModelOriginalScoreAdditive) model applied to features, sum of:\n" +
+            "    -100.0 = tree 0 | \\'matchedTitle\\':0.0 <= 0.500001, Go Left | val: -100.0\n" +
+            "    -20.0 = tree 1 | val: -10.0\\n'}");
+  }
+
+  @Test
   public void scoreCalculus_multiplicativeEuristicBoost_shouldMultiplyToLambdaMARTScore() throws Exception {
     final SolrQuery query = new SolrQuery();
     query.setQuery("field(popularity)");
@@ -194,6 +248,35 @@ public class TestEuristicBoostedLambdaMARTModel extends TestRerankBase {
     assertJQ("/query" + query.toQueryString(), "/response/docs/[2]/id=='2'");
     assertJQ("/query" + query.toQueryString(),
         "/response/docs/[2]/score==-4.8");
+  }
+
+  @Test
+  public void scoreExplain_multiplicativeEuristicBoost_shouldMultiplyToLambdaMARTScore() throws Exception {
+    final SolrQuery query = new SolrQuery();
+    query.setQuery("field(popularity)");
+    query.add("rows", "3");
+    query.setParam("defType", "func");
+    query.setParam("debugQuery", "on");
+    query.add("fl", "*,score");
+    query.add("rq",
+        "{!ltr reRankDocs=3 model=lambdaMARTModelOriginalScoreMultiplicative efi.user_query=w3}");
+
+    assertJQ(
+        "/query" + query.toQueryString(),
+        "/debug/explain/3=='\n" +
+            "300.0 = EuristicBoostedLambdaMARTModel(name=lambdaMARTModelOriginalScoreMultiplicative) model applied to features, prod of:\n" +
+            "  10.0 = 0.5 weight on feature [originalScoreFeature] : 20.0\n" +
+            "  30.0 = LambdaMARTModel(name=lambdaMARTModelOriginalScoreMultiplicative) model applied to features, sum of:\n" +
+            "    50.0 = tree 0 | \\'matchedTitle\\':1.0 > 0.500001, Go Right | \\'this_feature_doesnt_exist\\' does not exist in FV, Go Left | val: 50.0\n" +
+            "    -20.0 = tree 1 | val: -10.0\n'}");
+    assertJQ(
+        "/query" + query.toQueryString(),
+        "/debug/explain/1=='\n" +
+            "-2.3999999 = EuristicBoostedLambdaMARTModel(name=lambdaMARTModelOriginalScoreMultiplicative) model applied to features, prod of:\n" +
+            "  0.02 = 0.5 weight on feature [originalScoreFeature] : 100.0\n" +
+            "  -120.0 = LambdaMARTModel(name=lambdaMARTModelOriginalScoreMultiplicative) model applied to features, sum of:\n" +
+            "    -100.0 = tree 0 | \\'matchedTitle\\':0.0 <= 0.500001, Go Left | val: -100.0\n" +
+            "    -20.0 = tree 1 | val: -10.0\\n'}");
   }
 
   @Test(expected = ModelException.class)
