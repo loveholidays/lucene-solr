@@ -43,11 +43,11 @@ public class TestLambdaMARTModel extends TestRerankBase {
   public static void before() throws Exception {
     setuptest("solrconfig-ltr.xml", "schema-ltr.xml");
 
-    assertU(adoc("id", "1", "title", "w1", "description", "w1 w2", "popularity",
+    assertU(adoc("id", "1", "title", "w1", "description", "w1", "popularity",
         "100"));
     assertU(adoc("id", "2", "title", "w2", "description", "w2", "popularity",
         "50"));
-    assertU(adoc("id", "3", "title", "w3", "description", "w3 w1", "popularity",
+    assertU(adoc("id", "3", "title", "w3", "description", "w3", "popularity",
         "20"));
     assertU(adoc("id", "4", "title", "w4", "description", "w4", "popularity",
         "4"));
@@ -74,6 +74,7 @@ public class TestLambdaMARTModel extends TestRerankBase {
     query.add("fl", "*,score");
 
     // Regular scores
+    assertJQ("/query" + query.toQueryString(), "/response/docs/[0]/id=='1'");
     assertJQ("/query" + query.toQueryString(), "/response/docs/[0]/score==100.0");
     assertJQ("/query" + query.toQueryString(), "/response/docs/[1]/id=='2'");
     assertJQ("/query" + query.toQueryString(), "/response/docs/[1]/score==50.0");
@@ -93,6 +94,11 @@ public class TestLambdaMARTModel extends TestRerankBase {
     assertJQ("/query" + query.toQueryString(), "/response/docs/[2]/id=='2'");
     assertJQ("/query" + query.toQueryString(),
         "/response/docs/[2]/score==-120.0");
+  }
+
+  @Test(expected = ModelException.class)
+  public void lambdaMartTestNoParams() throws Exception {
+    createModelFromFiles("lambdamart_model_no_params.json", "lambdamart_features.json");
   }
 
   @Test(expected = ModelException.class)
@@ -123,7 +129,6 @@ public class TestLambdaMARTModel extends TestRerankBase {
   public void lambdaMartTestNoRight() throws Exception {
     createModelFromFiles("lambdamart_model_no_right.json",
         "lambdamart_features.json");
-
   }
 
   @Test(expected = ModelException.class)
@@ -136,7 +141,6 @@ public class TestLambdaMARTModel extends TestRerankBase {
   public void lambdaMartTestNoThreshold() throws Exception {
     createModelFromFiles("lambdamart_model_no_threshold.json",
         "lambdamart_features.json");
-
   }
 
   @Test(expected = ModelException.class)
