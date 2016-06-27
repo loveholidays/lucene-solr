@@ -100,7 +100,7 @@ public class ModelQuery extends Query {
   @Override
   public int hashCode() {
     final int prime = 31;
-    int result = classHash();
+    int result = super.hashCode();
     result = (prime * result) + ((meta == null) ? 0 : meta.hashCode());
     result = (prime * result)
         + ((originalQuery == null) ? 0 : originalQuery.hashCode());
@@ -108,9 +108,18 @@ public class ModelQuery extends Query {
     result = (prime * result) + this.toString().hashCode();
     return result;
   }
-@Override
-  public boolean equals(Object o) {
-    return sameClassAs(o) &&  equalsTo(getClass().cast(o));
+
+  @Override
+  public boolean equals(Object obj) {
+    if (!super.equals(obj)) return false;
+    ModelQuery other = (ModelQuery) obj;
+    if (meta == null) {
+      if (other.meta != null) return false;
+    } else if (!meta.equals(other.meta)) return false;
+    if (originalQuery == null) {
+      if (other.originalQuery != null) return false;
+    } else if (!originalQuery.equals(other.originalQuery)) return false;
+    return true;
   }
 
   private boolean equalsTo(ModelQuery other) {
