@@ -76,7 +76,7 @@ public abstract class Feature extends Query implements Cloneable {
   @Override
   public int hashCode() {
     final int prime = 31;
-    int result = classHash();
+    int result = super.hashCode();
     result = (prime * result) + id;
     result = (prime * result) + ((name == null) ? 0 : name.hashCode());
     result = (prime * result) + ((params == null) ? 0 : params.hashCode());
@@ -84,8 +84,20 @@ public abstract class Feature extends Query implements Cloneable {
   }
 
   @Override
-  public boolean equals(Object o) {
-    return sameClassAs(o) &&  equalsTo(getClass().cast(o));
+  public boolean equals(Object obj) {
+    if (!super.equals(obj)) return false;
+    Feature other = (Feature) obj;
+    if (id != other.id) return false;
+    if (name == null) {
+      if (other.name != null) return false;
+    } else if (!name.equals(other.name)) return false;
+    if (params == null) {
+      if (other.params != null) return false;
+    } else if (!params.equals(other.params)) return false;
+    if (type == null) {
+      if (other.type != null) return false;
+    } else if (!type.equals(other.type)) return false;
+    return true;
   }
 
   private boolean equalsTo(Feature other) {
