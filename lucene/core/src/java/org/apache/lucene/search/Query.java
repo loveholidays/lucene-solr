@@ -85,4 +85,29 @@ public abstract class Query {
       return false;
     return getClass() == obj.getClass();
   }
+
+  /**
+   * Utility method to check whether <code>other</code> is not null and is exactly
+   * of the same class as this object's class.
+   *
+   * When this method is used in an implementation of {@link #equals(Object)},
+   * consider using {@link #classHash()} in the implementation
+   * of {@link #hashCode} to differentiate different class
+   */
+
+  protected final boolean sameClassAs(Object other) {
+    return other != null && getClass() == other.getClass();
+  }
+
+  private final int CLASS_NAME_HASH = getClass().getName().hashCode();
+
+  /**
+   * Provides a constant integer for a given class, derived from the name of the class.
+   * The rationale for not using just {@link Class#hashCode()} is that classes may be
+   * assigned different hash codes for each execution and we want hashes to be possibly
+   * consistent to facilitate debugging.
+   */
+  protected final int classHash() {
+    return CLASS_NAME_HASH;
+  }
 }
