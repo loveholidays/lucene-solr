@@ -37,9 +37,7 @@ public abstract class HeuristicBoostedModel extends CompositeLTRScoringAlgorithm
 
   protected EuristicFeatureBoost heuristicFeatureBoost;
 
-  public enum BoostType {product, sum}
-
-  ;
+  public enum BoostType {product, sum};
 
   class EuristicFeatureBoost {
     public static final String FEATURE_NAME = "feature";
