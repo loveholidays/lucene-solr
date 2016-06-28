@@ -34,7 +34,6 @@ import org.apache.solr.request.SolrQueryRequest;
 public abstract class Feature extends Query implements Cloneable {
 
   protected String name;
-  protected String type;
   protected Normalizer norm = IdentityNormalizer.INSTANCE;
   protected int id;
   protected NamedParams params = NamedParams.EMPTY;
@@ -42,7 +41,6 @@ public abstract class Feature extends Query implements Cloneable {
   public void init(String name, NamedParams params, int id)
       throws FeatureException {
     this.name = name;
-    this.type = getClass().getSimpleName();
     this.params = params;
     this.id = id;
   }
@@ -66,7 +64,7 @@ public abstract class Feature extends Query implements Cloneable {
 
   @Override
   public String toString(String field) {
-    return "Feature [name=" + name + ", type=" + type + ", id=" + id
+    return "Feature [name=" + name + ", type=" + getClass().getSimpleName() + ", id=" + id
         + ", params=" + params + "]";
   }
 
@@ -126,10 +124,6 @@ public abstract class Feature extends Query implements Cloneable {
    */
   public String getName() {
     return name;
-  }
-
-  public String getType() {
-    return type;
   }
 
   /**
