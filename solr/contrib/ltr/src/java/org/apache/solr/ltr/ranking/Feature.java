@@ -92,9 +92,6 @@ public abstract class Feature extends Query implements Cloneable {
     if (params == null) {
       if (other.params != null) return false;
     } else if (!params.equals(other.params)) return false;
-    if (type == null) {
-      if (other.type != null) return false;
-    } else if (!type.equals(other.type)) return false;
     return true;
   }
 
