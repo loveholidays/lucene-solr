@@ -310,8 +310,8 @@ list that will be computed but not used in the model for scoring, which can
 be useful for logging. Params are the LambdaMART specific parameters. In this
 case we have 2 trees, one with 3 leaf nodes and one with 1 leaf node.
 
--A good library for training LambdaMART ( http://sourceforge.net/p/lemur/wiki/RankLib/ ).
--You will need to convert the RankLib model format to the format specified above.
+A good library for training LambdaMART ( http://sourceforge.net/p/lemur/wiki/RankLib/ ).
+You will need to convert the RankLib model format to the format specified above.
 
 ###### model3.json
 ```json
