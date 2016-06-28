@@ -1,5 +1,5 @@
 {
-  "type": "org.apache.solr.ltr.ranking.EuristicBoostedLambdaMARTModel",
+  "type": "org.apache.solr.ltr.ranking.HeuristicBoostedLambdaMARTModel",
   "name": "lambdaMARTModelOriginalScoreNoOriginalScoreFeature",
   "features": [
     {

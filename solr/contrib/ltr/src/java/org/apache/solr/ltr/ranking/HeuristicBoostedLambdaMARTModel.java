@@ -1,6 +1,8 @@
 package org.apache.solr.ltr.ranking;
 
 import java.util.List;
+
+import org.apache.solr.ltr.feature.LTRScoringAlgorithm;
 import org.apache.solr.ltr.util.ModelException;
 import org.apache.solr.ltr.util.NamedParams;
 
@@ -21,12 +23,16 @@ import org.apache.solr.ltr.util.NamedParams;
  * limitations under the License.
  */
 
-public class EuristicBoostedLambdaMARTModel extends EuristicBoostedModel {
+public class HeuristicBoostedLambdaMARTModel extends HeuristicBoostedModel {
 
-  public EuristicBoostedLambdaMARTModel(String name, List<Feature> features,
-                                        String featureStoreName, List<Feature> allFeatures,
-                                        NamedParams params) throws ModelException {
+  public HeuristicBoostedLambdaMARTModel(String name, List<Feature> features,
+                                         String featureStoreName, List<Feature> allFeatures,
+                                         NamedParams params) throws ModelException {
     super(name, features, featureStoreName, allFeatures, params);
-    super.LTRModel = new LambdaMARTModel(name, features, featureStoreName, allFeatures, params);
+  }
+
+  @Override
+  protected LTRScoringAlgorithm createLTRModel(String name, List<Feature> features, String featureStoreName, List<Feature> allFeatures, NamedParams params) {
+    return new LambdaMARTModel(name, features, featureStoreName, allFeatures, params);
   }
 }

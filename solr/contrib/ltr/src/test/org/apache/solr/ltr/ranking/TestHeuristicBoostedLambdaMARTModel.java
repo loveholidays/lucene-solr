@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
  */
 
 @SuppressCodecs({"Lucene3x", "Lucene41", "Lucene40", "Appending"})
-public class TestEuristicBoostedLambdaMARTModel extends TestRerankBase {
+public class TestHeuristicBoostedLambdaMARTModel extends TestRerankBase {
 
   @SuppressWarnings("unused")
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles
@@ -56,9 +56,9 @@ public class TestEuristicBoostedLambdaMARTModel extends TestRerankBase {
 
     loadFeatures("lambdamart_features.json"); // currently needed to force
     // loading models
-    loadModels("euristic_boosted_lambdamart_model_additive.json");
-    loadModels("euristic_boosted_lambdamart_model_multiplicative.json");
-    loadModels("euristic_boosted_lambdamart_model_noBoostType.json");
+    loadModels("heuristic_boosted_lambdamart_model_additive.json");
+    loadModels("heuristic_boosted_lambdamart_model_multiplicative.json");
+    loadModels("heuristic_boosted_lambdamart_model_noBoostType.json");
     loadModels("lambdamart_model.json");
   }
 
@@ -68,7 +68,7 @@ public class TestEuristicBoostedLambdaMARTModel extends TestRerankBase {
   }
 
   @Test
-  public void scoreCalculus_noEuristicBoost_shouldOverwriteScoreWithLambdaMARTOutput() throws Exception {
+  public void scoreCalculus_noHeuristicBoost_shouldOverwriteScoreWithLambdaMARTOutput() throws Exception {
     final SolrQuery query = new SolrQuery();
     query.setQuery("field(popularity)");
     query.add("rows", "3");
@@ -98,7 +98,7 @@ public class TestEuristicBoostedLambdaMARTModel extends TestRerankBase {
   }
 
   @Test
-  public void scoreExplain_noEuristicBoost_shouldOverwriteScoreWithLambdaMARTOutput() throws Exception {
+  public void scoreExplain_noHeuristicBoost_shouldOverwriteScoreWithLambdaMARTOutput() throws Exception {
     final SolrQuery query = new SolrQuery();
     query.setQuery("field(popularity)");
     query.add("rows", "3");
@@ -123,7 +123,7 @@ public class TestEuristicBoostedLambdaMARTModel extends TestRerankBase {
   }
 
   @Test
-  public void scoreCalculus_noBoostTypeEuristicBoost_shoulDefaultMultiplyToLambdaMARTScore() throws Exception {
+  public void scoreCalculus_noBoostTypeHeuristicBoost_shoulDefaultMultiplyToLambdaMARTScore() throws Exception {
     final SolrQuery query = new SolrQuery();
     query.setQuery("field(popularity)");
     query.add("rows", "3");
@@ -156,7 +156,7 @@ public class TestEuristicBoostedLambdaMARTModel extends TestRerankBase {
   }
 
   @Test
-  public void scoreCalculus_additiveEuristicBoost_shouldAddToLambdaMARTScore() throws Exception {
+  public void scoreCalculus_additiveHeuristicBoost_shouldAddToLambdaMARTScore() throws Exception {
     final SolrQuery query = new SolrQuery();
     query.setQuery("field(popularity)");
     query.add("rows", "3");
@@ -189,7 +189,7 @@ public class TestEuristicBoostedLambdaMARTModel extends TestRerankBase {
   }
 
   @Test
-  public void scoreExplain_additiveEuristicBoost_shouldAddToLambdaMARTScore() throws Exception {
+  public void scoreExplain_additiveHeuristicBoost_shouldAddToLambdaMARTScore() throws Exception {
     final SolrQuery query = new SolrQuery();
     query.setQuery("field(popularity)");
     query.add("rows", "3");
@@ -202,7 +202,7 @@ public class TestEuristicBoostedLambdaMARTModel extends TestRerankBase {
     assertJQ(
         "/query" + query.toQueryString(),
         "/debug/explain/3=='\n" +
-            "32.0 = EuristicBoostedLambdaMARTModel(name=lambdaMARTModelOriginalScoreAdditive) model applied to features, sum of:\n" +
+            "32.0 = HeuristicBoostedLambdaMARTModel(name=lambdaMARTModelOriginalScoreAdditive) model applied to features, sum of:\n" +
             "  2.0 = 0.1 weight on feature [originalScoreFeature] : 20.0\n" +
             "  30.0 = LambdaMARTModel(name=lambdaMARTModelOriginalScoreAdditive) model applied to features, sum of:\n" +
             "    50.0 = tree 0 | \\'matchedTitle\\':1.0 > 0.500001, Go Right | \\'this_feature_doesnt_exist\\' does not exist in FV, Go Left | val: 50.0\n" +
@@ -210,7 +210,7 @@ public class TestEuristicBoostedLambdaMARTModel extends TestRerankBase {
     assertJQ(
         "/query" + query.toQueryString(),
         "/debug/explain/1=='\n" +
-            "-110.0 = EuristicBoostedLambdaMARTModel(name=lambdaMARTModelOriginalScoreAdditive) model applied to features, sum of:\n" +
+            "-110.0 = HeuristicBoostedLambdaMARTModel(name=lambdaMARTModelOriginalScoreAdditive) model applied to features, sum of:\n" +
             "  10.0 = 0.1 weight on feature [originalScoreFeature] : 100.0\n" +
             "  -120.0 = LambdaMARTModel(name=lambdaMARTModelOriginalScoreAdditive) model applied to features, sum of:\n" +
             "    -100.0 = tree 0 | \\'matchedTitle\\':0.0 <= 0.500001, Go Left | val: -100.0\n" +
@@ -218,7 +218,7 @@ public class TestEuristicBoostedLambdaMARTModel extends TestRerankBase {
   }
 
   @Test
-  public void scoreCalculus_multiplicativeEuristicBoost_shouldMultiplyToLambdaMARTScore() throws Exception {
+  public void scoreCalculus_multiplicativeHeuristicBoost_shouldMultiplyToLambdaMARTScore() throws Exception {
     final SolrQuery query = new SolrQuery();
     query.setQuery("field(popularity)");
     query.add("rows", "3");
@@ -251,7 +251,7 @@ public class TestEuristicBoostedLambdaMARTModel extends TestRerankBase {
   }
 
   @Test
-  public void scoreExplain_multiplicativeEuristicBoost_shouldMultiplyToLambdaMARTScore() throws Exception {
+  public void scoreExplain_multiplicativeHeuristicBoost_shouldMultiplyToLambdaMARTScore() throws Exception {
     final SolrQuery query = new SolrQuery();
     query.setQuery("field(popularity)");
     query.add("rows", "3");
@@ -264,7 +264,7 @@ public class TestEuristicBoostedLambdaMARTModel extends TestRerankBase {
     assertJQ(
         "/query" + query.toQueryString(),
         "/debug/explain/3=='\n" +
-            "300.0 = EuristicBoostedLambdaMARTModel(name=lambdaMARTModelOriginalScoreMultiplicative) model applied to features, prod of:\n" +
+            "300.0 = HeuristicBoostedLambdaMARTModel(name=lambdaMARTModelOriginalScoreMultiplicative) model applied to features, product of:\n" +
             "  10.0 = 0.5 weight on feature [originalScoreFeature] : 20.0\n" +
             "  30.0 = LambdaMARTModel(name=lambdaMARTModelOriginalScoreMultiplicative) model applied to features, sum of:\n" +
             "    50.0 = tree 0 | \\'matchedTitle\\':1.0 > 0.500001, Go Right | \\'this_feature_doesnt_exist\\' does not exist in FV, Go Left | val: 50.0\n" +
@@ -272,7 +272,7 @@ public class TestEuristicBoostedLambdaMARTModel extends TestRerankBase {
     assertJQ(
         "/query" + query.toQueryString(),
         "/debug/explain/1=='\n" +
-            "-2.3999999 = EuristicBoostedLambdaMARTModel(name=lambdaMARTModelOriginalScoreMultiplicative) model applied to features, prod of:\n" +
+            "-2.3999999 = HeuristicBoostedLambdaMARTModel(name=lambdaMARTModelOriginalScoreMultiplicative) model applied to features, product of:\n" +
             "  0.02 = 0.5 weight on feature [originalScoreFeature] : 100.0\n" +
             "  -120.0 = LambdaMARTModel(name=lambdaMARTModelOriginalScoreMultiplicative) model applied to features, sum of:\n" +
             "    -100.0 = tree 0 | \\'matchedTitle\\':0.0 <= 0.500001, Go Left | val: -100.0\n" +
@@ -280,20 +280,26 @@ public class TestEuristicBoostedLambdaMARTModel extends TestRerankBase {
   }
 
   @Test(expected = ModelException.class)
-  public void parsingLambdaMARTModel_noEuristicBoostFeature_shouldThrowException() throws Exception {
-    createModelFromFiles("euristic_boosted_lambdamart_model_featureMissing.json",
+  public void parsingLambdaMARTModel_boostTypeNotSupported_shouldThrowException() throws Exception {
+    createModelFromFiles("heuristic_boosted_lambdamart_model_notSupportedBoostType.json",
         "lambdamart_features.json");
   }
 
   @Test(expected = ModelException.class)
-  public void parsingLambdaMARTModel_noEuristicBoostFeatureInTheModel_shouldThrowException() throws Exception {
-    createModelFromFiles("euristic_boosted_lambdamart_model_featureNotInModel.json",
+  public void parsingLambdaMARTModel_noHeuristicBoostFeature_shouldThrowException() throws Exception {
+    createModelFromFiles("heuristic_boosted_lambdamart_model_featureMissing.json",
         "lambdamart_features.json");
   }
 
   @Test(expected = ModelException.class)
-  public void parsingLambdaMARTModel_noWeightForEuristicBoost_shouldThrowException() throws Exception {
-    createModelFromFiles("euristic_boosted_lambdamart_model_noFeatureWeight.json",
+  public void parsingLambdaMARTModel_noHeuristicBoostFeatureInTheModel_shouldThrowException() throws Exception {
+    createModelFromFiles("heuristic_boosted_lambdamart_model_featureNotInModel.json",
+        "lambdamart_features.json");
+  }
+
+  @Test(expected = ModelException.class)
+  public void parsingLambdaMARTModel_noWeightForHeuristicBoost_shouldThrowException() throws Exception {
+    createModelFromFiles("heuristic_boosted_lambdamart_model_noFeatureWeight.json",
         "lambdamart_features.json");
   }
 }

@@ -1,5 +1,5 @@
 {
-  "type": "org.apache.solr.ltr.ranking.EuristicBoostedLambdaMARTModel",
+  "type": "org.apache.solr.ltr.ranking.HeuristicBoostedLambdaMARTModel",
   "name": "lambdaMARTModelOriginalScoreAdditive",
   "features": [
     {
@@ -16,7 +16,7 @@
     "boost": {
       "feature": "originalScoreFeature",
       "weight": 0.1,
-      "type": "additive"
+      "type": "sum"
     },
     "trees": [
       {
