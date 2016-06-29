@@ -119,6 +119,13 @@ public class ModelQuery extends Query {
     if (originalQuery == null) {
       if (other.originalQuery != null) return false;
     } else if (!originalQuery.equals(other.originalQuery)) return false;
+    if (efi == null) {
+      if (other.efi != null) {
+        return false;
+      }
+    } else if (!efi.equals(other.efi)) {
+      return false;
+    }
     return true;
   }
 
