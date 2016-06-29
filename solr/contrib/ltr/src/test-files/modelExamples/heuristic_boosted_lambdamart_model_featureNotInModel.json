@@ -24,7 +24,7 @@
             "value": -100
           },
           "right": {
-            "feature": "this_feature_doesnt_exist",
+            "feature": "constantScoreToForceLambdaMARTScoreAllDocs",
             "threshold": 10.0,
             "left": {
               "value": 50
