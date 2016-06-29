@@ -166,13 +166,4 @@ public abstract class HeuristicBoostedModel extends CompositeLTRScoringAlgorithm
         + " model applied to features, " + heuristicFeatureBoost.type + " of:", details);
   }
 
-  private float[] getFeatureVector(List<Explanation> featureExplanations) {
-    float[] weightedFeaturesVector = new float[numFeatures()];
-    for (int i = 0; i < numFeatures(); i++) {
-      Explanation currentExplanation = featureExplanations.get(i);
-      weightedFeaturesVector[i] = currentExplanation.getValue();
-    }
-    return weightedFeaturesVector;
-  }
-
 }
