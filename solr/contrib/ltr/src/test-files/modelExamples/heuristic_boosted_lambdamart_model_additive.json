@@ -16,7 +16,7 @@
     "boost": {
       "feature": "originalScoreFeature",
       "weight": 0.1,
-      "type": "sum"
+      "type": "SUM"
     },
     "trees": [
       {

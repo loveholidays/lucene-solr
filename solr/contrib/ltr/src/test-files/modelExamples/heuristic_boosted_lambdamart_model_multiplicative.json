@@ -16,7 +16,7 @@
     "boost": {
       "feature": "originalScoreFeature",
       "weight": 0.5,
-      "type": "product"
+      "type": "PRODUCT"
     },
     "trees": [
       {

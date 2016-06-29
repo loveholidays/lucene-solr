@@ -35,11 +35,11 @@ import org.apache.solr.ltr.util.NamedParams;
 public abstract class HeuristicBoostedModel extends CompositeLTRScoringAlgorithm {
   public static final String HEURISTIC_BOOST_PARAM = "boost";
 
-  protected EuristicFeatureBoost heuristicFeatureBoost;
+  protected HeuristicFeatureBoost heuristicFeatureBoost;
 
-  public enum BoostType {product, sum};
+  public enum BoostType {PRODUCT, SUM};
 
-  class EuristicFeatureBoost {
+  class HeuristicFeatureBoost {
     public static final String FEATURE_NAME = "feature";
     public static final String WEIGHT = "weight";
     public static final String BOOST_TYPE = "type";
@@ -49,18 +49,18 @@ public abstract class HeuristicBoostedModel extends CompositeLTRScoringAlgorithm
     public float weight;
     public BoostType type;
 
-    public EuristicFeatureBoost(Map<String, Object> featureBoostParam) {
+    public HeuristicFeatureBoost(Map<String, Object> featureBoostParam) {
       checkParams(featureBoostParam);
       feature = ((String)featureBoostParam.get(FEATURE_NAME));
       weight = NamedParams.convertToFloat(featureBoostParam.get(WEIGHT));
       featureIndex = getFeatureIndex(feature);
-      type = BoostType.product;
+      type = BoostType.PRODUCT;
 
       if (featureBoostParam.get(BOOST_TYPE) != null) {
         String fetchedType = (String) featureBoostParam.get(BOOST_TYPE);
-        if (BoostType.sum.toString().equals(fetchedType)) {
-          type = BoostType.sum;
-        } else if ((!BoostType.sum.product.toString().equals(fetchedType))) {
+        try {
+          type = BoostType.valueOf(fetchedType);
+        } catch (IllegalArgumentException e) {
           throw new ModelException("Model " + HeuristicBoostedModel.this.getName() + " boost type : " + fetchedType + " is not supported");
         }
       }
@@ -107,7 +107,7 @@ public abstract class HeuristicBoostedModel extends CompositeLTRScoringAlgorithm
   protected void initHeuristicBoost() {
     Map<String, Object> params = (Map<String, Object>) HeuristicBoostedModel.this.getParams().get(HEURISTIC_BOOST_PARAM);
     if (params != null) {
-      this.heuristicFeatureBoost = new EuristicFeatureBoost(params);
+      this.heuristicFeatureBoost = new HeuristicFeatureBoost(params);
     }
   }
 
@@ -120,11 +120,11 @@ public abstract class HeuristicBoostedModel extends CompositeLTRScoringAlgorithm
       float weightedBoostFeatureValue = getWeightedBoostFeatureValue(internalModelScore, boostFeatureValue);
 
       switch (heuristicFeatureBoost.type) {
-        case product:
+        case PRODUCT:
           finalScore *= weightedBoostFeatureValue;
           break;
 
-        case sum:
+        case SUM:
           finalScore += weightedBoostFeatureValue;
           break;
       }
@@ -135,7 +135,7 @@ public abstract class HeuristicBoostedModel extends CompositeLTRScoringAlgorithm
   private float getWeightedBoostFeatureValue(float internalModelScore, float boostFeatureValue) {
     float weightedBoostFeatureValue = heuristicFeatureBoost.weight * boostFeatureValue;
     switch (heuristicFeatureBoost.type) {
-      case product:
+      case PRODUCT:
         if ((internalModelScore < 0 && weightedBoostFeatureValue > 0) || (internalModelScore > 0 && weightedBoostFeatureValue < 0)) {
           weightedBoostFeatureValue = 1 / weightedBoostFeatureValue;
         }
