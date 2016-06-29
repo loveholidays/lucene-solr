@@ -326,7 +326,7 @@ You will need to convert the RankLib model format to the format specified above.
     "boost": {
           "feature": "originalScoreFeature",
           "weight": 0.5,
-          "type": "additive"
+          "type": "SUM"
         },
         "trees": [
             {
@@ -369,14 +369,14 @@ Given :
 "boost":{
                 "feature":"originalScoreFeature",
                 "weight":0.1,
-                "type":"additive"
+                "type":"SUM"
             }
 The original score feature value, weighted by a factor of 0.1, will be added to the score produced by the LambdaMART trees.
 
 "boost":{
                 "feature":"originalScoreFeature",
                 "weight":0.1,
-                "type":"multiplicative"
+                "type":"PRODUCT"
             }
 The original score feature value, weighted by a factor of 0.1, will be multiplied to the score produced by the LambdaMART trees.
 

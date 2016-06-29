@@ -55,10 +55,9 @@ public class TestHeuristicBoostedLambdaMARTModel extends TestRerankBase {
     assertU(commit());
 
     loadFeatures("lambdamart_features.json"); // currently needed to force
-    // loading models
+    // loading models used by different tests
     loadModels("heuristic_boosted_lambdamart_model_additive.json");
     loadModels("heuristic_boosted_lambdamart_model_multiplicative.json");
-    loadModels("heuristic_boosted_lambdamart_model_noBoostType.json");
     loadModels("lambdamart_model.json");
   }
 
@@ -124,6 +123,8 @@ public class TestHeuristicBoostedLambdaMARTModel extends TestRerankBase {
 
   @Test
   public void scoreCalculus_noBoostTypeHeuristicBoost_shoulDefaultMultiplyToLambdaMARTScore() throws Exception {
+    loadModels("heuristic_boosted_lambdamart_model_noBoostType.json");
+
     final SolrQuery query = new SolrQuery();
     query.setQuery("field(popularity)");
     query.add("rows", "3");
@@ -175,6 +176,41 @@ public class TestHeuristicBoostedLambdaMARTModel extends TestRerankBase {
     query.remove("rq");
     query.add("rq",
         "{!ltr reRankDocs=3 model=lambdaMARTModelOriginalScoreAdditive efi.user_query=w3}");
+
+    assertJQ("/query" + query.toQueryString(), "/response/docs/[0]/id=='3'");
+    assertJQ("/query" + query.toQueryString(), "/response/docs/[0]/score==32.0");
+
+    assertJQ("/query" + query.toQueryString(), "/response/docs/[1]/id=='1'");
+    assertJQ("/query" + query.toQueryString(),
+        "/response/docs/[1]/score==-110.0");
+
+    assertJQ("/query" + query.toQueryString(), "/response/docs/[2]/id=='2'");
+    assertJQ("/query" + query.toQueryString(),
+        "/response/docs/[2]/score==-115.0");
+  }
+
+  @Test
+  public void scoreCalculus_additiveHeuristicBoostLowercaseConfig_shouldAddToLambdaMARTScore() throws Exception {
+    loadModels("heuristic_boosted_lambdamart_model_additive_lowercaseConf.json");
+
+    final SolrQuery query = new SolrQuery();
+    query.setQuery("field(popularity)");
+    query.add("rows", "3");
+    query.setParam("defType", "func");
+    query.add("fl", "*,score");
+
+    // Regular scores
+    assertJQ("/query" + query.toQueryString(), "/response/docs/[0]/id=='1'");
+    assertJQ("/query" + query.toQueryString(), "/response/docs/[0]/score==100.0");
+    assertJQ("/query" + query.toQueryString(), "/response/docs/[1]/id=='2'");
+    assertJQ("/query" + query.toQueryString(), "/response/docs/[1]/score==50.0");
+    assertJQ("/query" + query.toQueryString(), "/response/docs/[2]/id=='3'");
+    assertJQ("/query" + query.toQueryString(), "/response/docs/[2]/score==20.0");
+
+    // Matched user query since it was passed in
+    query.remove("rq");
+    query.add("rq",
+        "{!ltr reRankDocs=3 model=lambdaMARTModelOriginalScoreAdditiveLowercase efi.user_query=w3}");
 
     assertJQ("/query" + query.toQueryString(), "/response/docs/[0]/id=='3'");
     assertJQ("/query" + query.toQueryString(), "/response/docs/[0]/score==32.0");

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.search.Explanation;
 import org.apache.solr.ltr.util.ModelException;
@@ -59,7 +60,7 @@ public abstract class HeuristicBoostedModel extends CompositeLTRScoringAlgorithm
       if (featureBoostParam.get(BOOST_TYPE) != null) {
         String fetchedType = (String) featureBoostParam.get(BOOST_TYPE);
         try {
-          type = BoostType.valueOf(fetchedType);
+          type = BoostType.valueOf(StringUtils.strip(fetchedType).toUpperCase());
         } catch (IllegalArgumentException e) {
           throw new ModelException("Model " + HeuristicBoostedModel.this.getName() + " boost type : " + fetchedType + " is not supported");
         }
