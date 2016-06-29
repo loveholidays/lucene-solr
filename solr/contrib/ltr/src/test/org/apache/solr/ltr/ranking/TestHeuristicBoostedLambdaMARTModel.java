@@ -205,7 +205,7 @@ public class TestHeuristicBoostedLambdaMARTModel extends TestRerankBase {
             "32.0 = HeuristicBoostedLambdaMARTModel(name=lambdaMARTModelOriginalScoreAdditive) model applied to features, SUM of:\n" +
             "  2.0 = 0.1 weight on feature [originalScoreFeature] : 20.0\n" +
             "  30.0 = LambdaMARTModel(name=lambdaMARTModelOriginalScoreAdditive) model applied to features, sum of:\n" +
-            "    50.0 = tree 0 | \\'matchedTitle\\':1.0 > 0.500001, Go Right | \\'this_feature_doesnt_exist\\' does not exist in FV, Go Left | val: 50.0\n" +
+            "    50.0 = tree 0 | \\'matchedTitle\\':1.0 > 0.500001, Go Right | \\'constantScoreToForceLambdaMARTScoreAllDocs\\':1.0 <= 10.000001, Go Left | val: 50.0\n" +
             "    -20.0 = tree 1 | val: -10.0\n'}");
     assertJQ(
         "/query" + query.toQueryString(),
@@ -267,7 +267,7 @@ public class TestHeuristicBoostedLambdaMARTModel extends TestRerankBase {
             "300.0 = HeuristicBoostedLambdaMARTModel(name=lambdaMARTModelOriginalScoreMultiplicative) model applied to features, PRODUCT of:\n" +
             "  10.0 = 0.5 weight on feature [originalScoreFeature] : 20.0\n" +
             "  30.0 = LambdaMARTModel(name=lambdaMARTModelOriginalScoreMultiplicative) model applied to features, sum of:\n" +
-            "    50.0 = tree 0 | \\'matchedTitle\\':1.0 > 0.500001, Go Right | \\'this_feature_doesnt_exist\\' does not exist in FV, Go Left | val: 50.0\n" +
+            "    50.0 = tree 0 | \\'matchedTitle\\':1.0 > 0.500001, Go Right | \\'constantScoreToForceLambdaMARTScoreAllDocs\\':1.0 <= 10.000001, Go Left | val: 50.0\n" +
             "    -20.0 = tree 1 | val: -10.0\n'}");
     assertJQ(
         "/query" + query.toQueryString(),
