@@ -105,7 +105,7 @@ public class TestLTRQParserPlugin extends TestRerankBase {
 
     final String res = restTestHarness.query("/query" + query.toQueryString());
     System.out.println(res);
-    assert (res.contains("Requesting more documents than being reranked."));
+    assert (!res.contains("Requesting more documents than being reranked."));
     /*
      * String solrQuery =
      * "_query_:{!edismax qf='title' mm=100% v='bloomberg' tie=0.1}";

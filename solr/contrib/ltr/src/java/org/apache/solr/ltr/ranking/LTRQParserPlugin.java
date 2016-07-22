@@ -108,10 +108,6 @@ public class LTRQParserPlugin extends QParserPlugin {
       }
       req.getContext().put(CommonLTRParams.MODEL, reRankModel);
 
-      if ((start + rows) > reRankDocs) {
-        throw new SolrException(ErrorCode.BAD_REQUEST,
-            "Requesting more documents than being reranked.");
-      }
       reRankDocs = Math.max(start + rows, reRankDocs);
 
       // External features
