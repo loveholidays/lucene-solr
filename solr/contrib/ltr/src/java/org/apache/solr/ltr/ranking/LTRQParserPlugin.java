@@ -108,8 +108,6 @@ public class LTRQParserPlugin extends QParserPlugin {
       }
       req.getContext().put(CommonLTRParams.MODEL, reRankModel);
 
-      reRankDocs = Math.max(start + rows, reRankDocs);
-
       // External features
       final Map<String,String> externalFeatureInfo = LTRUtils.extractEFIParams(localParams);
       reRankModel.setExternalFeatureInfo(externalFeatureInfo);
