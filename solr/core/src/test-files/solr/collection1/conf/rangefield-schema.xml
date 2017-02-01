@@ -17,7 +17,7 @@
 -->
 <schema name="minimal" version="1.1">
   <fieldType name="id" class="solr.StrField"/>
-  <fieldType name="range" class="solr.DoubleRangeSolrField"/>
+  <fieldType name="range" class="solr.RangeField"/>
   <fieldType name="int" class="solr.TrieIntField" precisionStep="0" omitNorms="true" positionIncrementGap="0"/>
   <fieldType name="long" class="solr.TrieLongField" precisionStep="0" omitNorms="true" positionIncrementGap="0"/>
 
