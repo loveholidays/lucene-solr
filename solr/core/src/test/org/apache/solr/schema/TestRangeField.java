@@ -17,6 +17,7 @@ package org.apache.solr.schema;
  */
 
 import org.apache.solr.SolrTestCaseJ4;
+import org.apache.solr.request.SolrQueryRequest;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -28,13 +29,17 @@ public class TestRangeField extends SolrTestCaseJ4 {
   }
 
   @Test
-  public void testRangeQuery() {
+  public void testRangeQuery() throws Exception {
 
     assertU(adoc("id", "1", "range", "[0 TO 10, 0 TO 10]"));
     assertU(adoc("id", "2", "range", "[0 TO 10, 0 TO 5]"));
     assertU(commit());
 
-    assertQ(req("q", "{!pr}range:(4, 9)", "debugQuery", "true"), "//result[@numFound='1']");
+    SolrQueryRequest req = req("q", "{!pr}range:(4, 9)", "fl", "range");
+    assertQ(req, "//result[@numFound='1']");
+
+    String out = h.query(req);
+    assertTrue(out.contains("[0 TO 10"));
 
   }
 

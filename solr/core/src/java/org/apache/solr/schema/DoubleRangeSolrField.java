@@ -17,8 +17,12 @@ package org.apache.solr.schema;
  */
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import org.apache.lucene.document.DoubleRangeField;
+import org.apache.lucene.document.StoredField;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.SortField;
@@ -64,9 +68,16 @@ public class DoubleRangeSolrField extends FieldType {
   }
 
   @Override
-  protected IndexableField createField(String name, String val, org.apache.lucene.document.FieldType type, float boost) {
-    ParsedRange range = new ParsedRange(val);
-    return new DoubleRangeField(name, range.min, range.max);
+  public List<IndexableField> createFields(SchemaField field, Object value, float boost) {
+    ParsedRange range = new ParsedRange(value.toString());
+    IndexableField f = new DoubleRangeField(field.name, range.min, range.max);
+    if (field.stored() == false)
+      return Collections.singletonList(f);
+
+    List<IndexableField> fields = new ArrayList<>();
+    fields.add(f);
+    fields.add(new StoredField(field.name, value.toString()));
+    return fields;
   }
 
   @Override
@@ -86,7 +97,7 @@ public class DoubleRangeSolrField extends FieldType {
 
   @Override
   public void write(TextResponseWriter textResponseWriter, String s, IndexableField indexableField) throws IOException {
-
+    textResponseWriter.writeVal(s, indexableField.stringValue());
   }
 
   @Override

@@ -23,7 +23,7 @@
 
   <fields>
     <field name="id" type="id"/>
-    <field name="range" type="range"/>
+    <field name="range" type="range" stored="true"/>
     <field name="_version_" type="long" indexed="true" stored="true"/>
   </fields>
 </schema>
