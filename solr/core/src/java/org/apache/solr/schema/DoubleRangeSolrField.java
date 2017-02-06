@@ -92,7 +92,7 @@ public class DoubleRangeSolrField extends FieldType {
 
   public static Query containsQuery(String field, String input) {
     ParsedRange range = new ParsedRange(input);
-    return DoubleRangeField.newContainsQuery(field, range.min, range.max);
+    return DoubleRangeField.newIntersectsQuery(field, range.min, range.max);
   }
 
   @Override
