@@ -21,10 +21,8 @@ import org.apache.lucene.search.Query;
 import org.apache.solr.common.SolrException;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.request.SolrQueryRequest;
-import org.apache.solr.schema.DoubleRangeSolrField;
+import org.apache.solr.schema.FieldType;
 import org.apache.solr.schema.RangeField;
-import org.apache.solr.search.QParser;
-import org.apache.solr.search.QParserPlugin;
 
 public class PointRangeQParserPlugin extends QParserPlugin {
 
@@ -37,6 +35,17 @@ public class PointRangeQParserPlugin extends QParserPlugin {
       public Query parse() throws SyntaxError {
         String field = localParams.required().get("field");
         String method = localParams.required().get("method");
+
+        FieldType ft = req.getSchema().getFieldType(field);
+
+        if (ft instanceof RangeField) {
+          return rangeFieldQuery((RangeField)ft, field, method);
+        }
+
+        throw new SolrException(SolrException.ErrorCode.BAD_REQUEST, "Unsupported Field Type for field " + field + ": " + ft.getTypeName());
+      }
+
+      private Query rangeFieldQuery(RangeField RangeField, String field, String method) {
         switch (method) {
           case "within":
           case "w":

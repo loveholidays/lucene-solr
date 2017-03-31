@@ -18,12 +18,14 @@
 <schema name="minimal" version="1.1">
   <fieldType name="id" class="solr.StrField"/>
   <fieldType name="range" class="solr.RangeField"/>
+  <fieldType name="range_i" class="solr.RangeFieldInt"/>
   <fieldType name="int" class="solr.TrieIntField" precisionStep="0" omitNorms="true" positionIncrementGap="0"/>
   <fieldType name="long" class="solr.TrieLongField" precisionStep="0" omitNorms="true" positionIncrementGap="0"/>
 
   <fields>
     <field name="id" type="id"/>
     <field name="range" type="range" stored="true"/>
+    <field name="range_i" type="range_i" stored="true"/>
     <field name="_version_" type="long" indexed="true" stored="true"/>
   </fields>
 </schema>
