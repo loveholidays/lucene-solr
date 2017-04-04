@@ -81,7 +81,25 @@ public class Lucene60PointsWriter extends PointsWriter implements Closeable {
 
   /** Uses the defaults values for {@code maxPointsInLeafNode} (1024) and {@code maxMBSortInHeap} (16.0) */
   public Lucene60PointsWriter(SegmentWriteState writeState) throws IOException {
-    this(writeState, BKDWriter.DEFAULT_MAX_POINTS_IN_LEAF_NODE, BKDWriter.DEFAULT_MAX_MB_SORT_IN_HEAP);
+    this(writeState, defaultMaxPointsInLeaf(), defaultMaxMBSortInHeap());
+  }
+
+  private static float defaultMaxMBSortInHeap() {
+    String property = System.getProperty("lucene.points.maxMBSortInHeap");
+    if (property == null) {
+      return BKDWriter.DEFAULT_MAX_MB_SORT_IN_HEAP;
+    }
+
+    return Float.parseFloat(property);
+  }
+
+  private static int defaultMaxPointsInLeaf() {
+    String property = System.getProperty("lucene.points.maxPointsInLeaf");
+    if (property == null) {
+      return BKDWriter.DEFAULT_MAX_POINTS_IN_LEAF_NODE;
+    }
+
+    return Integer.parseInt(property);
   }
 
   @Override
