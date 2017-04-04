@@ -247,7 +247,7 @@ public class BKDWriter implements Closeable {
 
   /** If the current segment has too many points then we spill over to temp files / offline sort. */
   private void spillToOffline() throws IOException {
-
+    System.out.println("Spilled to disk at pointCount: " + this.pointCount);
     // For each .add we just append to this input file, then in .finish we sort this input and resursively build the tree:
     offlinePointWriter = new OfflinePointWriter(tempDir, tempFileNamePrefix, packedBytesLength, longOrds, "spill", 0, singleValuePerDoc);
     tempInput = offlinePointWriter.out;
@@ -929,7 +929,7 @@ public class BKDWriter implements Closeable {
 
   /** Writes the BKD tree to the provided {@link IndexOutput} and returns the file offset where index was written. */
   public long finish(IndexOutput out) throws IOException {
-    // System.out.println("\nBKDTreeWriter.finish pointCount=" + pointCount + " out=" + out + " heapWriter=" + heapPointWriter);
+     System.out.println("\nBKDTreeWriter.finish pointCount=" + pointCount + " out=" + out + " heapWriter=" + heapPointWriter);
 
     // TODO: specialize the 1D case?  it's much faster at indexing time (no partitioning on recurse...)
 
