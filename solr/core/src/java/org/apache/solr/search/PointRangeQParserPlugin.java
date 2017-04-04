@@ -45,17 +45,17 @@ public class PointRangeQParserPlugin extends QParserPlugin {
         throw new SolrException(SolrException.ErrorCode.BAD_REQUEST, "Unsupported Field Type for field " + field + ": " + ft.getTypeName());
       }
 
-      private Query rangeFieldQuery(RangeField RangeField, String field, String method) {
+      private Query rangeFieldQuery(RangeField rangeField, String field, String method) {
         switch (method) {
           case "within":
           case "w":
-            return RangeField.withinQuery(field, qstr);
+            return rangeField.withinQuery(field, qstr);
           case "contains":
           case "c":
-            return RangeField.containsQuery(field, qstr);
+            return rangeField.containsQuery(field, qstr);
           case "intersects":
           case "i":
-            return RangeField.intersectsQuery(field, qstr);
+            return rangeField.intersectsQuery(field, qstr);
           default:
             throw new SolrException(SolrException.ErrorCode.BAD_REQUEST, "Unsupported method: " + method);
         }
