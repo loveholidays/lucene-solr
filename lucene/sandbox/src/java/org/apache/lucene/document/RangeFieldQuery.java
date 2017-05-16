@@ -136,6 +136,11 @@ abstract class RangeFieldQuery extends Query {
               }
               @Override
               public Relation compare(byte[] minPackedValue, byte[] maxPackedValue) {
+                if (Arrays.equals(minPackedValue, maxPackedValue)) {
+                  if (queryType == QueryType.CONTAINS && comparator.isWithin(minPackedValue)) {
+                    return Relation.CELL_INSIDE_QUERY;
+                  }
+                }
                 byte[] node = getInternalRange(minPackedValue, maxPackedValue);
                 // compute range relation for BKD traversal
                 if (comparator.isDisjoint(node)) {
