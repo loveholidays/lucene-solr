@@ -24,11 +24,10 @@ import org.apache.lucene.index.FieldInfo;
 import org.apache.lucene.index.LeafReader;
 import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.PointValues;
-import org.apache.lucene.index.PointValues.Relation;
 import org.apache.lucene.index.PointValues.IntersectVisitor;
+import org.apache.lucene.index.PointValues.Relation;
 import org.apache.lucene.search.ConstantScoreScorer;
 import org.apache.lucene.search.ConstantScoreWeight;
-import org.apache.lucene.search.DocIdSet;
 import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
@@ -58,11 +57,167 @@ abstract class RangeFieldQuery extends Query {
   /** Used by {@code RangeFieldQuery} to check how each internal or leaf node relates to the query. */
   enum QueryType {
     /** Use this for intersects queries. */
-    INTERSECTS,
+    INTERSECTS {
+
+      @Override
+      Relation compare(byte[] queryPackedValue, byte[] minPackedValue, byte[] maxPackedValue,
+          int numDims, int bytesPerDim, int dim) {
+        int minOffset = dim * bytesPerDim;
+        int maxOffset = minOffset + bytesPerDim * numDims;
+
+        if (StringHelper.compare(bytesPerDim, queryPackedValue, maxOffset, minPackedValue, minOffset) < 0
+            || StringHelper.compare(bytesPerDim, queryPackedValue, minOffset, maxPackedValue, maxOffset) > 0) {
+          // disjoint
+          return Relation.CELL_OUTSIDE_QUERY;
+        }
+
+        if (StringHelper.compare(bytesPerDim, queryPackedValue, maxOffset, maxPackedValue, minOffset) >= 0
+            && StringHelper.compare(bytesPerDim, queryPackedValue, minOffset, minPackedValue, maxOffset) <= 0) {
+          return Relation.CELL_INSIDE_QUERY;
+        }
+
+        return Relation.CELL_CROSSES_QUERY;
+      }
+
+      @Override
+      boolean matches(byte[] queryPackedValue, byte[] packedValue, int numDims, int bytesPerDim, int dim) {
+        int minOffset = dim * bytesPerDim;
+        int maxOffset = minOffset + bytesPerDim * numDims;
+        return StringHelper.compare(bytesPerDim, queryPackedValue, maxOffset, packedValue, minOffset) >= 0
+            && StringHelper.compare(bytesPerDim, queryPackedValue, minOffset, packedValue, maxOffset) <= 0;
+      }
+
+    },
     /** Use this for within queries. */
-    WITHIN,
+    WITHIN {
+
+      @Override
+      Relation compare(byte[] queryPackedValue, byte[] minPackedValue, byte[] maxPackedValue,
+          int numDims, int bytesPerDim, int dim) {
+        int minOffset = dim * bytesPerDim;
+        int maxOffset = minOffset + bytesPerDim * numDims;
+
+        if (StringHelper.compare(bytesPerDim, queryPackedValue, maxOffset, minPackedValue, maxOffset) < 0
+            || StringHelper.compare(bytesPerDim, queryPackedValue, minOffset, maxPackedValue, minOffset) > 0) {
+          // all ranges have at least one point outside of the query
+          return Relation.CELL_OUTSIDE_QUERY;
+        }
+
+        if (StringHelper.compare(bytesPerDim, queryPackedValue, maxOffset, maxPackedValue, maxOffset) >= 0
+            && StringHelper.compare(bytesPerDim, queryPackedValue, minOffset, minPackedValue, minOffset) <= 0) {
+          return Relation.CELL_INSIDE_QUERY;
+        }
+
+        return Relation.CELL_CROSSES_QUERY;
+      }
+
+      @Override
+      boolean matches(byte[] queryPackedValue, byte[] packedValue, int numDims, int bytesPerDim, int dim) {
+        int minOffset = dim * bytesPerDim;
+        int maxOffset = minOffset + bytesPerDim * numDims;
+        return StringHelper.compare(bytesPerDim, queryPackedValue, minOffset, packedValue, minOffset) <= 0
+            && StringHelper.compare(bytesPerDim, queryPackedValue, maxOffset, packedValue, maxOffset) >= 0;
+      }
+
+    },
     /** Use this for contains */
-    CONTAINS
+    CONTAINS {
+
+      @Override
+      Relation compare(byte[] queryPackedValue, byte[] minPackedValue, byte[] maxPackedValue,
+          int numDims, int bytesPerDim, int dim) {
+        int minOffset = dim * bytesPerDim;
+        int maxOffset = minOffset + bytesPerDim * numDims;
+
+        if (StringHelper.compare(bytesPerDim, queryPackedValue, maxOffset, maxPackedValue, maxOffset) > 0
+            || StringHelper.compare(bytesPerDim, queryPackedValue, minOffset, minPackedValue, minOffset) < 0) {
+          // all ranges are either less than the query max or greater than the query min
+          return Relation.CELL_OUTSIDE_QUERY;
+        }
+
+        if (StringHelper.compare(bytesPerDim, queryPackedValue, maxOffset, minPackedValue, maxOffset) <= 0
+            && StringHelper.compare(bytesPerDim, queryPackedValue, minOffset, maxPackedValue, minOffset) >= 0) {
+          return Relation.CELL_INSIDE_QUERY;
+        }
+
+        return Relation.CELL_CROSSES_QUERY;
+      }
+
+      @Override
+      boolean matches(byte[] queryPackedValue, byte[] packedValue, int numDims, int bytesPerDim, int dim) {
+        int minOffset = dim * bytesPerDim;
+        int maxOffset = minOffset + bytesPerDim * numDims;
+        return StringHelper.compare(bytesPerDim, queryPackedValue, minOffset, packedValue, minOffset) >= 0
+            && StringHelper.compare(bytesPerDim, queryPackedValue, maxOffset, packedValue, maxOffset) <= 0;
+      }
+
+    },
+    /** Use this for crosses queries */
+    CROSSES {
+
+      @Override
+      Relation compare(byte[] queryPackedValue, byte[] minPackedValue, byte[] maxPackedValue,
+          int numDims, int bytesPerDim, int dim) {
+        throw new UnsupportedOperationException();
+      }
+
+      @Override
+      boolean matches(byte[] queryPackedValue, byte[] packedValue, int numDims, int bytesPerDim, int dim) {
+        throw new UnsupportedOperationException();
+      }
+
+      @Override
+      Relation compare(byte[] queryPackedValue, byte[] minPackedValue, byte[] maxPackedValue,
+          int numDims, int bytesPerDim) {
+        Relation intersectRelation = QueryType.INTERSECTS.compare(queryPackedValue, minPackedValue, maxPackedValue, numDims, bytesPerDim);
+        if (intersectRelation == Relation.CELL_OUTSIDE_QUERY) {
+          return Relation.CELL_OUTSIDE_QUERY;
+        }
+
+        Relation withinRelation = QueryType.WITHIN.compare(queryPackedValue, minPackedValue, maxPackedValue, numDims, bytesPerDim);
+        if (withinRelation == Relation.CELL_INSIDE_QUERY) {
+          return Relation.CELL_OUTSIDE_QUERY;
+        }
+
+        if (intersectRelation == Relation.CELL_INSIDE_QUERY && withinRelation == Relation.CELL_OUTSIDE_QUERY) {
+          return Relation.CELL_INSIDE_QUERY;
+        }
+
+        return Relation.CELL_CROSSES_QUERY;
+      }
+
+      boolean matches(byte[] queryPackedValue, byte[] packedValue, int numDims, int bytesPerDim) {
+        return INTERSECTS.matches(queryPackedValue, packedValue, numDims, bytesPerDim)
+            && WITHIN.matches(queryPackedValue, packedValue, numDims, bytesPerDim) == false;
+      }
+
+    };
+
+    abstract Relation compare(byte[] queryPackedValue, byte[] minPackedValue, byte[] maxPackedValue, int numDims, int bytesPerDim, int dim);
+
+    Relation compare(byte[] queryPackedValue, byte[] minPackedValue, byte[] maxPackedValue, int numDims, int bytesPerDim) {
+      boolean inside = true;
+      for (int dim = 0; dim < numDims; ++dim) {
+        Relation relation = compare(queryPackedValue, minPackedValue, maxPackedValue, numDims, bytesPerDim, dim);
+        if (relation == Relation.CELL_OUTSIDE_QUERY) {
+          return Relation.CELL_OUTSIDE_QUERY;
+        } else if (relation != Relation.CELL_INSIDE_QUERY) {
+          inside = false;
+        }
+      }
+      return inside ? Relation.CELL_INSIDE_QUERY : Relation.CELL_CROSSES_QUERY;
+    }
+
+    abstract boolean matches(byte[] queryPackedValue, byte[] packedValue, int numDims, int bytesPerDim, int dim);
+
+    boolean matches(byte[] queryPackedValue, byte[] packedValue, int numDims, int bytesPerDim) {
+      for (int dim = 0; dim < numDims; ++dim) {
+        if (matches(queryPackedValue, packedValue, numDims, bytesPerDim, dim) == false) {
+          return false;
+        }
+      }
+      return true;
+    }
   }
 
   /**
@@ -107,56 +262,29 @@ abstract class RangeFieldQuery extends Query {
   @Override
   public final Weight createWeight(IndexSearcher searcher, boolean needsScores) throws IOException {
     return new ConstantScoreWeight(this) {
-      final RangeFieldComparator comparator = new RangeFieldComparator();
-      private DocIdSet buildMatchingDocIdSet(LeafReader reader, PointValues values) throws IOException {
-        DocIdSetBuilder result = new DocIdSetBuilder(reader.maxDoc(), values, field);
-        values.intersect(field,
-            new IntersectVisitor() {
-              DocIdSetBuilder.BulkAdder adder;
-              @Override
-              public void grow(int count) {
-                adder = result.grow(count);
-              }
-              @Override
-              public void visit(int docID) throws IOException {
-                adder.add(docID);
-              }
-              @Override
-              public void visit(int docID, byte[] leaf) throws IOException {
-                // add the document iff:
-                if (Arrays.equals(ranges, leaf)
-                    // target is within cell and queryType is INTERSECTS or CONTAINS:
-                    || (comparator.isWithin(leaf) && queryType != QueryType.WITHIN)
-                    // target contains cell and queryType is INTERSECTS or WITHIN:
-                    || (comparator.contains(leaf) && queryType != QueryType.CONTAINS)
-                    // target is not disjoint (crosses) and queryType is INTERSECTS
-                    || (comparator.isDisjoint(leaf) == false && queryType == QueryType.INTERSECTS)) {
-                  adder.add(docID);
-                }
-              }
-              @Override
-              public Relation compare(byte[] minPackedValue, byte[] maxPackedValue) {
-                if (Arrays.equals(minPackedValue, maxPackedValue)) {
-                  if (queryType == QueryType.CONTAINS && comparator.isWithin(minPackedValue)) {
-                    return Relation.CELL_INSIDE_QUERY;
-                  }
-                }
-                byte[] node = getInternalRange(minPackedValue, maxPackedValue);
-                // compute range relation for BKD traversal
-                if (comparator.isDisjoint(node)) {
-                  return Relation.CELL_OUTSIDE_QUERY;
-                } else if (comparator.isWithin(node)) {
-                  // target within cell; continue traversing:
-                  return Relation.CELL_CROSSES_QUERY;
-                } else if (comparator.contains(node)) {
-                  // target contains cell; add iff queryType is not a CONTAINS query:
-                  return (queryType == QueryType.CONTAINS) ? Relation.CELL_OUTSIDE_QUERY : Relation.CELL_INSIDE_QUERY;
-                }
-                // target intersects cell; continue traversing:
-                return Relation.CELL_CROSSES_QUERY;
-              }
-            });
-        return result.build();
+
+      private IntersectVisitor getIntersectVisitor(DocIdSetBuilder result) {
+        return new IntersectVisitor() {
+          DocIdSetBuilder.BulkAdder adder;
+          @Override
+          public void grow(int count) {
+            adder = result.grow(count);
+          }
+          @Override
+          public void visit(int docID) throws IOException {
+            adder.add(docID);
+          }
+          @Override
+          public void visit(int docID, byte[] leaf) throws IOException {
+            if (queryType.matches(ranges, leaf, numDims, bytesPerDim)) {
+              adder.add(docID);
+            }
+          }
+          @Override
+          public Relation compare(byte[] minPackedValue, byte[] maxPackedValue) {
+            return queryType.compare(ranges, minPackedValue, maxPackedValue, numDims, bytesPerDim);
+          }
+        };
       }
 
       @Override
@@ -173,98 +301,26 @@ abstract class RangeFieldQuery extends Query {
           return null;
         }
         checkFieldInfo(fieldInfo);
-        boolean allDocsMatch = true;
-        if (values.getDocCount(field) == reader.maxDoc()) {
-          // if query crosses, docs need to be further scrutinized
-          byte[] range = getInternalRange(values.getMinPackedValue(field), values.getMaxPackedValue(field));
-          // if the internal node is not equal and not contained by the query, all docs do not match
-          if ((!Arrays.equals(ranges, range)
-              && (comparator.contains(range) && queryType != QueryType.CONTAINS)) == false) {
-            allDocsMatch = false;
-          }
+        boolean allDocsMatch = false;
+        if (values.getDocCount(field) == reader.maxDoc()
+            && queryType.compare(ranges, values.getMinPackedValue(field), values.getMaxPackedValue(field), numDims, bytesPerDim) == Relation.CELL_INSIDE_QUERY) {
+          allDocsMatch = true;
+        }
+
+        final Weight weight = this;
+        if (allDocsMatch) {
+          return new ConstantScoreScorer(weight, score(), DocIdSetIterator.all(reader.maxDoc()));
         } else {
-          allDocsMatch = false;
+          final DocIdSetBuilder result = new DocIdSetBuilder(reader.maxDoc(), values, field);
+          final IntersectVisitor visitor = getIntersectVisitor(result);
+          long cost = -1;
+          values.intersect(field, visitor);
+          DocIdSetIterator iterator = result.build().iterator();
+          return new ConstantScoreScorer(weight, score(), iterator);
         }
-
-        DocIdSetIterator iterator = allDocsMatch == true ?
-            DocIdSetIterator.all(reader.maxDoc()) : buildMatchingDocIdSet(reader, values).iterator();
-        return new ConstantScoreScorer(this, score(), iterator);
       }
 
-      /** get an encoded byte representation of the internal node; this is
-       *  the lower half of the min array and the upper half of the max array */
-      private byte[] getInternalRange(byte[] min, byte[] max) {
-        byte[] range = new byte[min.length];
-        final int dimSize = numDims * bytesPerDim;
-        System.arraycopy(min, 0, range, 0, dimSize);
-        System.arraycopy(max, dimSize, range, dimSize, dimSize);
-        return range;
-      }
     };
-  }
-
-  /**
-   * RangeFieldComparator class provides the core comparison logic for accepting or rejecting indexed
-   * {@code RangeField} types based on the defined query range and relation.
-   */
-  class RangeFieldComparator {
-    /** check if the query is outside the candidate range */
-    private boolean isDisjoint(final byte[] range) {
-      for (int d=0; d<numDims; ++d) {
-        if (compareMinMax(range, d) > 0 || compareMaxMin(range, d) < 0) {
-          return true;
-        }
-      }
-      return false;
-    }
-
-    /** check if query is within candidate range */
-    private boolean isWithin(final byte[] range) {
-      for (int d=0; d<numDims; ++d) {
-        if (compareMinMin(range, d) < 0 || compareMaxMax(range, d) > 0) {
-          return false;
-        }
-      }
-      return true;
-    }
-
-    /** check if query contains candidate range */
-    private boolean contains(final byte[] range) {
-      for (int d=0; d<numDims; ++d) {
-        if (compareMinMin(range, d) > 0 || compareMaxMax(range, d) < 0) {
-          return false;
-        }
-      }
-      return true;
-    }
-
-    /** compare the encoded min value (for the defined query dimension) with the encoded min value in the byte array */
-    private int compareMinMin(byte[] b, int dimension) {
-      // convert dimension to offset:
-      dimension *= bytesPerDim;
-      return StringHelper.compare(bytesPerDim, ranges, dimension, b, dimension);
-    }
-
-    /** compare the encoded min value (for the defined query dimension) with the encoded max value in the byte array */
-    private int compareMinMax(byte[] b, int dimension) {
-      // convert dimension to offset:
-      dimension *= bytesPerDim;
-      return StringHelper.compare(bytesPerDim, ranges, dimension, b, numDims * bytesPerDim + dimension);
-    }
-
-    /** compare the encoded max value (for the defined query dimension) with the encoded min value in the byte array */
-    private int compareMaxMin(byte[] b, int dimension) {
-      // convert dimension to offset:
-      dimension *= bytesPerDim;
-      return StringHelper.compare(bytesPerDim, ranges, numDims * bytesPerDim + dimension, b, dimension);
-    }
-
-    /** compare the encoded max value (for the defined query dimension) with the encoded max value in the byte array */
-    private int compareMaxMax(byte[] b, int dimension) {
-      // convert dimension to max offset:
-      dimension = numDims * bytesPerDim + dimension * bytesPerDim;
-      return StringHelper.compare(bytesPerDim, ranges, dimension, b, dimension);
-    }
   }
 
   @Override
