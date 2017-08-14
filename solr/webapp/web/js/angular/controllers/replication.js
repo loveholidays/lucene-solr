@@ -95,7 +95,7 @@ var getIterations = function(slave) {
 
     for (var i in slave.indexReplicatedAtList) {
         var date = slave.indexReplicatedAtList[i];
-        var iteration = {date:date, status:"replicated", latest: false};
+        var iteration = {date:date, status:"replicated", latest:false, order:new Date(date).getTime()};
         if (date == slave.indexReplicatedAt) {
             iteration.latest = true;
         }
@@ -105,18 +105,20 @@ var getIterations = function(slave) {
     for (var i in slave.replicationFailedAtList) {
         var failedDate = slave.replicationFailedAtList[i];
         var matchingIterations = find(iterations, failedDate);
-        if (matchingIterations) {
+        if (matchingIterations[0]) {
             iteration = matchingIterations[0];
+            iteration.status = "failed";
         } else {
-            iteration = {date: failedDate, latest:false};
+            iteration = {date:failedDate, status:"failed", latest:false, order:new Date(failedDate).getTime()};
             iterations.push(iteration);
         }
-        iteration.status = "failed";
         if (failedDate == slave.replicationFailedAt) {
             iteration.latest = true;
         }
     }
-    iterations.sort(function(a,b){ return a.date> b.date;}).reverse();
+
+    iterations.sort(function(a,b){ return b.order - a.order;});
+
     return iterations;
 };
 
